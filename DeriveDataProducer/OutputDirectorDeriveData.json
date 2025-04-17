@@ -1,0 +1,36 @@
+{
+   "OutputDirector": {
+       "debug_mode": true,
+       "resfile": "AO2D_Derived",
+        "OutputDescriptors": [
+            {
+                "table": "AOD/COLLISION/0"
+            },
+            {
+                "table": "AOD/DRCOLLISION/0"
+            },
+            {
+               "table": "AOD/DRTRACK/0"
+            },
+            {
+               "table": "AOD/DRFV0As/0"
+            },
+            {
+               "table": "AOD/DRFT0s/0"
+            },
+            {
+               "table": "AOD/DRV0s/0"
+           },
+           {
+              "table": "AOD/OCCS/0"
+           },
+           {
+              "table": "AOD/TRACKMEANOCCS/0"
+           },
+           {
+              "table": "AOD/DRTRACKSMOTHER/0"
+           }
+         ],
+       "ntfmerge": 1000000000
+   }
+}
