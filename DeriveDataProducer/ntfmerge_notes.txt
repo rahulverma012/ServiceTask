@@ -1,0 +1,32 @@
+# --aod-writer-ntfmerge 50
+# --fairmq-ipc-prefix . \
+# ->Buildoutput.log
+
+# {
+#     "OutputDirector": {
+#         "debug_mode": true,
+#         "resfile": "AO2D",
+#         "OutputDescriptors": [
+#             {
+#                 "table": "AOD/COLLISION/0"
+#             },
+#             {
+#                 "table": "AOD/MYTABLE/0"
+#             }
+#         ],
+#         "ntfmerge": 1
+#        original DF= 2336960459657024
+#                              1000000
+#                     3000000000000000
+#                              1000000 =>     1M             1,000,000 - Gives two folders - 6993, 2334
+#                             10000000 =>    10M            10,000,000 - Same as above
+#                            100000000 =>   100M           100,000,000 - This Worked,  9327 = 6993+2334
+#                           1000000000 =>     1B         1,000,000,000 - Working Properly ==> range of int is  upto 2,147,483,647 (maybe it is int)
+#                          10000000000 =>    10B        10,000,000,000 - Working but folder name is different, DF_2336959213360128
+#                         100000000000 =>   100B       100,000,000,000 - Working but folder name is different, DF_2336960199036928
+#                        1000000000000 =>     1T     1,000,000,000,000 - It Failed
+#                       10000000000000 =>    10T    10,000,000,000,000 - Worked but folder name is different   DF_2336959420850176
+#                      100000000000000 =>   100T   100,000,000,000,000 - Worked but again different DF Name    DF_2336960221626368
+#                     1000000000000000 =>  1000T 1,000,000,000,000,000 - It Failed
+#     }
+# }
