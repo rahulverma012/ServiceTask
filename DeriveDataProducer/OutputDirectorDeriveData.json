@@ -13,13 +13,13 @@
                "table": "AOD/DRTRACK/0"
             },
             {
-               "table": "AOD/DRFV0As/0"
-            },
-            {
-               "table": "AOD/DRFT0s/0"
-            },
-            {
                "table": "AOD/DRV0s/0"
+           },
+            {
+               "table": "AOD/DRD0s/0"
+           },
+           {
+               "table": "AOD/DRPhis/0"
            },
            {
               "table": "AOD/OCCS/0"
@@ -29,8 +29,21 @@
            },
            {
               "table": "AOD/DRTRACKSMOTHER/0"
-           }
+           },
+           {
+              "table": "AOD/DRZ0S/0"
+           },
+           {
+              "table": "AOD/DRCOSMICPAIRS/0"
+           }           
          ],
        "ntfmerge": 1000000000
+   },
+    "backupOptions": {
+      "someProducer" :[
+            {"table" :"AOD/O12345678901234/0=},==>NoteThatEverythingDefinedWithMoreThan15CharWillBeLost"},
+            {"table": "AOD/DRFV0As/0"},
+            {"table": "AOD/DRFT0s/0"}
+      ]
    }
 }
