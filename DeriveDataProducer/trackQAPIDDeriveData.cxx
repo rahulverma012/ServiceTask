@@ -379,7 +379,17 @@ struct trackqapidderivedata{
 
   Configurable<float> cfgMLowPhi {"cfgMLowPhi", 1.013, "cfgMLowPhi"};
   Configurable<float> cfgMHighPhi {"cfgMHighPhi", 1.026, "cfgMHighPhi"};
+
   
+  struct : ConfigurableGroup{
+    Configurable<float> z0ThrPt {"z0ThrPt",20,"z0ThrPt"};
+    Configurable<float> z0ThrITSTPCLayer {"z0ThrITSTPCLayers",5,"z0ThrITSTPCLayers"};
+
+    Configurable<float> z0MLow  {"z0MLow" ,30,"z0MLow"};
+    Configurable<float> z0MHigh {"z0MHigh",200,"z0MHigh"};
+  } cfgZ0;
+
+
   struct : ConfigurableGroup {
   Configurable<float> csmMuThrPt        {"csmMuThrPt"        , 0.5, "csmMuThrPt"};
   Configurable<float> csmMuThrDCAMin    {"csmMuThrDCAMin"    , 0.5, "csmMuThrDCAMin"};
@@ -800,10 +810,10 @@ struct trackqapidderivedata{
   template<typename T> 
   bool selElectron(const T& track){
     if(track.hasTOF()){ 
-      if( std::sqrt(std::pow(track.tpcNSigmaEl(),2) + std::pow(track.tofNSigmaEl(),2)) < 2.0 ) {return true;}
+      if( std::sqrt(std::pow(track.tpcNSigmaEl(),2) + std::pow(track.tofNSigmaEl(),2)) < 3.0 ) {return true;}
     }
     else {
-      if (std::abs(track.tpcNSigmaEl()) < 2.0){
+      if (std::abs(track.tpcNSigmaEl()) < 3.0){
         return true;
       }
     }
@@ -813,10 +823,10 @@ struct trackqapidderivedata{
   template<typename T> 
   bool selMuon(const T& track){
     if(track.hasTOF()){ 
-      if( std::sqrt(std::pow(track.tpcNSigmaMu(),2) + std::pow(track.tofNSigmaMu(),2)) < 2.0 ) {return true;}
+      if( std::sqrt(std::pow(track.tpcNSigmaMu(),2) + std::pow(track.tofNSigmaMu(),2)) < 3.0 ) {return true;}
     }
     else {
-      if (std::abs(track.tpcNSigmaMu()) < 2.0){
+      if (std::abs(track.tpcNSigmaMu()) < 3.0){
         return true;
       }
     }
@@ -2725,13 +2735,11 @@ struct trackqapidderivedata{
       auto negTracks_perColl = negTracks->sliceByCached(aod::track::collisionId, collision.globalIndex(), cache);
 
       for(const auto& posTrack : posTracks_perColl){
+        if( posTrack.pt() < cfgZ0.z0ThrPt) {continue;}
         for(const auto& negTrack : negTracks_perColl){
           // if(posTrack.collisionId() != negTrack.collisionId()) {continue;} //both must belong to same collision.
-          if(posTrack.globalIndex() == negTrack.globalIndex()) {
-            LOG(info)<<"DEBUG :: ERROR ERROR ERRO :: A tracks is both positive and negative :: track.globalIndex() = "<<posTrack.globalIndex();
-            continue; //
-          }
-        //   //do track selection
+          if(negTrack.pt() < cfgZ0.z0ThrPt) {continue;}
+
           
           isZ0CandidateFromEl =false;
           isZ0CandidateFromMu =false;
@@ -2748,9 +2756,10 @@ struct trackqapidderivedata{
             dauEl2.SetXYZM(negTrack.px(), negTrack.py(), negTrack.pz(), MassElectron);
             motherFromEl = dauEl1 + dauEl2;
 
-            // Mll​=\sqrt(2 * p_{T_1} *​ p_{T_2}​(cosh(Δη)−cos(Δϕ))
+            // Mll​=\sqrt(2 * p_{T_1} *​ p_{T_2}​(cosh(Δη)−cos(Δϕ)) //another approach
+            
             float mass = motherFromEl.M();
-            if( 80 < mass && mass < 100 ) {
+            if( cfgZ0.z0MLow < mass && mass < cfgZ0.z0MHigh ) {
               BITSET(decayBit, 0);
             }
           }
@@ -2761,7 +2770,7 @@ struct trackqapidderivedata{
             dauMu2.SetXYZM(negTrack.px(), negTrack.py(), negTrack.pz(), MassMuonMinus);
             motherFromMu = dauMu1 + dauMu2;
             float mass = motherFromMu.M();
-            if( 80 < mass && mass < 100 ) {
+            if( cfgZ0.z0MLow < mass && mass < cfgZ0.z0MHigh ) {
               BITSET(decayBit, 1);
             }
           }          
@@ -2775,7 +2784,6 @@ struct trackqapidderivedata{
           posDuaIndexPosition = FindTrackIdInList(posTrack.globalIndex(), trackGlobalIndexList, DrTrackPositionIndexList, trackGlobalIndexList.size());
           negDuaIndexPosition = FindTrackIdInList(negTrack.globalIndex(), trackGlobalIndexList, DrTrackPositionIndexList, trackGlobalIndexList.size());
 
-          
           if(BITCHECK(decayBit, 0) != 0){
             DerivedZ0s(
               z0Counter+gZ0Checker
@@ -2940,11 +2948,11 @@ struct trackqapidderivedata{
     int trackCounterDebugger = 0;
     std::vector<int64_t> upperTrackTime;
     std::vector<int64_t> upperTrackTFidThis;
-    std::vector<int64_t> upperTrackBcInTF;
+    std::vector<int> upperTrackBcInTF;
 
     std::vector<int64_t> lowerTrackTime;
     std::vector<int64_t> lowerTrackTFidThis;
-    std::vector<int64_t> lowerTrackBcInTF;
+    std::vector<int> lowerTrackBcInTF;
 
     auto uColl = collisions.begin();
     auto lColl = collisions.begin();
@@ -3083,11 +3091,11 @@ struct trackqapidderivedata{
         recoEvent.fill(HIST("CosmicMuon/PreSel/diffAlphaPair"), fDiffAlphaPair );
 
         if ( fSumPtPair < cfgCM.csmMuSumPtPair                                           ) { pairRejectionHist->Fill(kFailSumPtPair    ); continue;}
-        if ( fSumQPtPair > cfgCM.csmMuSumQPtPair                                         ) { pairRejectionHist->Fill(kFailSumQPtPair   ); }//continue;}
-        if ( fSumTglPair > cfgCM.csmMuSumTglPair                                         ) { pairRejectionHist->Fill(kFailSumTglPair   ); }//continue;}
-        if (cfgCM.csmMuCheckSumDcaXY && fSumDcaXYPair > cfgCM.csmMuSumDcaXY              ) { pairRejectionHist->Fill(kFailSumDcaXY     ); }//continue;}
-        if (cfgCM.csmMuCheckDiffDcaXY && fDiffDcaXYPair > cfgCM.csmMuDiffDcaXY           ) { pairRejectionHist->Fill(kFailDiffDcaXY    ); }//continue;}
-        if (cfgCM.csmMuCheckDiffAlphaPair && fDiffAlphaPair > cfgCM.csmMuDiffAlphaPair   ) { pairRejectionHist->Fill(kFailDiffAlphaPair); }//continue;}
+        if ( fSumQPtPair > cfgCM.csmMuSumQPtPair                                         ) { pairRejectionHist->Fill(kFailSumQPtPair   ); continue;} //}//
+        if ( fSumTglPair > cfgCM.csmMuSumTglPair                                         ) { pairRejectionHist->Fill(kFailSumTglPair   ); continue;} //}//
+        if (cfgCM.csmMuCheckSumDcaXY && fSumDcaXYPair > cfgCM.csmMuSumDcaXY              ) { pairRejectionHist->Fill(kFailSumDcaXY     ); }//continue;} //
+        if (cfgCM.csmMuCheckDiffAlphaPair && fDiffAlphaPair > cfgCM.csmMuDiffAlphaPair   ) { pairRejectionHist->Fill(kFailDiffAlphaPair); }//continue;} //
+        if (cfgCM.csmMuCheckDiffDcaXY && fDiffDcaXYPair > cfgCM.csmMuDiffDcaXY           ) { pairRejectionHist->Fill(kFailDiffDcaXY    ); }//continue;} //
 
         recoEvent.fill(HIST("CosmicMuon/PostSel/sumPtPair"    ), fSumPtPair     );
         recoEvent.fill(HIST("CosmicMuon/PostSel/sumQPtPair"   ), fSumQPtPair    );
@@ -3523,13 +3531,14 @@ struct trackqapidderivedata{
           ,fDiffDcaXYPair 
           ,fDiffAlphaPair
 
-          ,time1
-          ,TFidThis1
-          ,bcInTF1
+          ,upperTrackTime
+          ,upperTrackTFidThis
+          ,upperTrackBcInTF
 
-          ,time2
-          ,TFidThis2
-          ,bcInTF2
+          ,lowerTrackTime
+          ,lowerTrackTFidThis
+          ,lowerTrackBcInTF
+
         );
         cosmicPairCounter++;
       }//lower track loop ends
