@@ -398,12 +398,12 @@ struct trackqapidderivedata{
   Configurable<float> csmMuSumPtPair    {"csmMuSumPtPair"    , 2.0 , "csmMuSumPtPair"};
   Configurable<float> csmMuSumQPtPair   {"csmMuSumQPtPair"   , 0.2 , "csmMuSumQPtPair"};
   Configurable<float> csmMuSumTglPair   {"csmMuSumTglPair"   , 0.01, "csmMuSumTglPair"};
-  Configurable<float> csmMuSumDcaXY     {"csmMuSumDcaXY"     , 0.6 , "csmMuSumDcaXY"};
+  Configurable<float> csmMuSumDcaXY     {"csmMuSumDcaXY"     , 6.0 , "csmMuSumDcaXY"};
   Configurable<float> csmMuDiffDcaXY    {"csmMuDiffDcaXY"    , 0.6 , "csmMuDiffDcaXY"};
-  Configurable<float> csmMuDiffAlphaPair{"csmMuDiffAlphaPair", 0.01, "csmMuDiffAlphaPair"};
+  Configurable<float> csmMuDiffAlphaPair{"csmMuDiffAlphaPair", 0.1, "csmMuDiffAlphaPair"};
 
   Configurable<bool> csmMuCheckSumDcaXY     {"csmMuCheckSumDcaXY"     , true, "csmMuCheckSumDcaXY"};
-  Configurable<bool> csmMuCheckDiffDcaXY    {"csmMuCheckDiffDcaXY"    , false, "csmMuCheckDiffDcaXY"};
+  Configurable<bool> csmMuCheckDiffDcaXY    {"csmMuCheckDiffDcaXY"    , true, "csmMuCheckDiffDcaXY"};
   Configurable<bool> csmMuCheckDiffAlphaPair{"csmMuCheckDiffAlphaPair", true, "csmMuCheckDiffAlphaPair"};
   } cfgCM;
 
@@ -838,7 +838,8 @@ struct trackqapidderivedata{
   using myCollisionsWithCent = soa::Join<aod::Collisions, aod::Mults, aod::MultsExtra, aod::FT0sCorrected, aod::EvSels
                                 ,aod::CentFV0As, aod::CentFT0Ms, aod::CentFT0As, aod::CentFT0Cs, aod::CentFDDMs, aod::CentNTPVs>;
 
-  using myTracks = soa::Join<aod::Tracks, aod::TrackToTracksQA, aod::TrackToAmbgTrk, o2::aod::TracksCov, aod::TracksExtra, aod::TracksDCA, aod::TracksDCACov, aod::TrackSelection //, aod::TracksQA>;//, 
+                                //  aod::TrackToTF,
+  using myTracks = soa::Join<aod::Tracks, aod::TrackToTracksQA, aod::TrackToAmbgTrk, aod::TrackToTF, o2::aod::TracksCov, aod::TracksExtra, aod::TracksDCA, aod::TracksDCACov, aod::TrackSelection //, aod::TracksQA>;//, 
                     ,aod::TOFSignal,  aod::pidTOFbeta, aod::pidTOFmass, aod::EvTimeTOFOnly, aod::pidTOFFlags, aod::pidEvTimeFlags
                     ,aod::pidTPCFullPi, aod::pidTPCFullKa, aod::pidTPCFullPr, aod::pidTPCFullEl, aod::pidTPCFullMu, aod::pidTPCFullDe
                     ,aod::pidTOFFullPi, aod::pidTOFFullKa, aod::pidTOFFullPr, aod::pidTOFFullEl, aod::pidTOFFullMu, aod::pidTOFFullDe>;
@@ -858,8 +859,8 @@ struct trackqapidderivedata{
   // For manual sliceBy
   Preslice<myTracks>  TracksPerCollisionPreslice = o2::aod::track::collisionId;
   Preslice<aod::TracksQA>  trackQA_Preslice = o2::aod::trackqa::trackId;
-  // Preslice<myTracks>  Tracks_PreSlice = o2::aod::track::globalIndex;
-  // Preslice<myTracks>  Tracks_PreSlice = o2::soa::globalIndex;
+  // Preslice<myTracks>  TracksPerTfPreSlice = o2::aod::track::tfId;
+  PresliceUnsorted<myTracks>  TracksPerTfPreSlice = o2::aod::track::tfId;
 
   //Use Partition after definition of filtered Tracks
   SliceCache cache;
@@ -901,10 +902,10 @@ struct trackqapidderivedata{
 
   std::chrono::high_resolution_clock::time_point Start0 = std::chrono::high_resolution_clock::now();
 
-  template<bool processWithCent, typename B, typename C, typename T, typename A>
+  template<bool processWithCent, typename B, typename C, typename T, typename A, typename D>
   void executeProcess(const B& BCs, const C& collisions, const T& tracks, const auto& tracksQA, const auto& Origins, 
       const A& ambgTracks, const auto &FV0As, const auto& FT0s, const auto &V0s, const auto& D0s, const auto& occIdxTable, 
-      const auto& occTables, const auto &trackMeanOccs){
+      const auto& occTables, const auto &trackMeanOccs, const D& timeFrames){
     lastRun = -999;
     nBCsPerTF = -999;
     bcSOR = -999;
@@ -925,12 +926,110 @@ struct trackqapidderivedata{
                                                                                       <<" :: tracKMeanOccs.size() = "<<trackMeanOccs.size()
                                                                                       <<" :: V0s.size() = "<<V0s.size()
                                                                                       <<" :: D0s.size() = "<<D0s.size()
+                                                                                      <<" :: timeFrames.size() = "<<timeFrames.size()
                                                                                       // <<" :: resoParts.size() = "<<resoParts.size()
                                                                                       // <<" :: FV0As.size() = "<<FV0As.size()
                                                                                       // // <<" :: FV0Cs.size() = "<<FV0Cs.size()
                                                                                       // <<" :: FT0s.size() = "<<FT0s.size()
                                                                                       ;
 
+    //check if timeframe Is sorted or not
+    
+    for( auto tf: timeFrames ){
+      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.globalIndex() = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame(); 
+    }
+
+    std::vector<int64_t> trackGIList ;
+    std::vector<int64_t> trackTFIdList ;
+    std::vector<int64_t> derefernceTFList ;
+
+    for ( auto track : tracks ){
+      trackGIList.push_back(track.globalIndex());
+      trackTFIdList.push_back(track.tfId());
+      derefernceTFList.push_back(track.template tf_as<D>().timeFrame());
+    }
+
+    if(std::is_sorted(trackGIList.begin(), trackGIList.end())){
+      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: track.globalIndex() is Sorted";
+    } else{
+      LOG(info)<<"DEBUG :: ERROR ERROR ERROR :: df_"<<dfCount<<"track.globalIndex() is UnSorted";
+    }
+
+    if(std::is_sorted(trackTFIdList.begin(), trackTFIdList.end())){
+      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: track.tfId() is Sorted";
+    } else{
+      LOG(info)<<"DEBUG :: ERROR ERROR ERROR :: df_"<<dfCount<<"track.tfId() is UnSorted";
+    }
+
+    if(std::is_sorted(derefernceTFList.begin(), derefernceTFList.end())){
+      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: track.tf_as<D>().timeFrame() is Sorted";
+    } else{
+      LOG(info)<<"DEBUG :: ERROR ERROR ERROR :: df_"<<dfCount<<" track.tf_as<D>().timeFrame() is UnSorted";
+    }
+
+    auto endIt = std::unique(derefernceTFList.begin(), derefernceTFList.end());
+    derefernceTFList.erase(endIt, derefernceTFList.end());
+
+    // std::sort(uniqueTFList.begin(), uniqueTFList.end());
+    // auto It = std::unique(uniqueTFList.begin(), uniqueTFList.end());
+    // uniqueTFList.erase(It, uniqueTFList.end()); // remove the duplicate entries
+
+
+    LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: derefernceTFList.size() = "<<derefernceTFList.size();
+    for(const auto&tfValues : derefernceTFList ){
+      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tfValues = "<<tfValues;
+    }
+
+    int nTracks[3]; 
+    nTracks[0] = 0; //kPos
+    nTracks[1] = 0; //kNeg
+    nTracks[2] = 0; //kTotal
+
+    // // can a track belong to many timeframes?
+    // for( auto tf: timeFrames ){
+    //   // //Partition positvie and negative tracks to time frames
+    //   // LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.globalIndex() = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame(); 
+    //   // auto posTracks_perTF = posTracks->sliceByCached(aod::track::tfId, tf.globalIndex(), cache);
+    //   // auto negTracks_perTF = negTracks->sliceByCached(aod::track::tfId, tf.globalIndex(), cache);
+    //   // LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: "<<tf.globalIndex()<<" :: posTracks = "<<posTracks_perTF.size()<<" :: negTracks = "<<negTracks_perTF.size();
+    //   // nTracks[0] += posTracks_perTF.size();
+    //   // nTracks[1] += negTracks_perTF.size();
+    //   const auto TracksTable_perTF =   tracks.sliceBy( TracksPerTfPreSlice, tf.globalIndex());
+    //   LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.GI = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame()<<" :: TracksTable_perTF.size() = "<<TracksTable_perTF.size();
+    //   int nCollTrks = 0; 
+    //   int nAmbgTrks = 0;
+    //   for( const auto& track : TracksTable_perTF){
+    //     if(track.collisionId() < 0){
+    //       nAmbgTrks++;
+    //       auto bcs = track.template ambgTrack_as<aod::AmbiguousTracks>().template bc_as<myBCTable>();
+    //       for (const auto& bc: bcs){
+    //         GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+    //         if(TFidThis != tf.timeFrame()){
+    //           if( dfCount == 1) { LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: Mismatch ambg:: tfIdThis = "<<TFidThis<<" :: tf.timeFrame() = "<<tf.timeFrame();}
+    //         }
+    //       }
+    //     } else {
+    //       auto bc = track.template collision_as<C>().template bc_as<myBCTable>();
+    //       GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+    //       if(TFidThis != tf.timeFrame()){
+    //         if( dfCount == 1) { LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: Mismatch coll:: TFidThis = "<<TFidThis<<" :: tf.timeFrame() = "<<tf.timeFrame();}
+    //       }
+    //       nCollTrks++;
+    //     }
+    //   }
+    //   LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.GI = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame()<<" :: nAmbgTrks = "<<nAmbgTrks<<" :: nCollTrks = "<<nCollTrks;
+
+    //   nTracks[0] += TracksTable_perTF.size();
+    // }
+    // nTracks[2] = nTracks[0] + nTracks[1];
+
+    // if( nTracks[2] != tracks.size()) {
+    //   LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: ERROR ERROR ERROR ::  nTracks[2] != tracks.size() i.e. "<<nTracks[2]<<" != "<<tracks.size();
+    // }
+
+      // const uint64_t collIdx = collision.globalIndex();
+      // const auto TracksTable_perColl =   tracks.sliceBy( TracksPerCollisionPreslice, collIdx);
+      
 
     auto StartOcc = std::chrono::high_resolution_clock::now();
     for(auto const& myocc : occTables){
@@ -2958,13 +3057,18 @@ struct trackqapidderivedata{
     auto lColl = collisions.begin();
 
     auto pairRejectionHist = recoEvent.get<TH1>(HIST("CosmicMuon/PairRejectionTrigger"));
-    
+
+    //loop over timeframes and associate tracks with that, infact partition them and use them
+
     for(const auto& upperTrk : tracks){
       // if(upperTrk.y() < 0 ) {continue;}
       // if ( !(0 <= upperTrk.alpha() && upperTrk.alpha() < TMath::Pi())) {continue;}
+      if(upperTrk.alpha() < 0 ) {continue;}
       if(upperTrk.pt() < cfgCM.csmMuThrPt ) {continue;}
       if(upperTrk.dcaXY() < cfgCM.csmMuThrDCAMin ) {continue;}
       if(upperTrk.dcaXY() > cfgCM.csmMuThrDCAMax ) {continue;}
+      if(upperTrk.tpcNClsFound() < 60 ) {continue;}
+
 
       if(upperTrk.collisionId()< 0 ) {
         upperTrackTime.clear();
@@ -3055,29 +3159,32 @@ struct trackqapidderivedata{
       for(const auto& lowerTrk : tracks){
         // if (lowerTrk.y() > 0 ) {continue;}
         // if ( !(-TMath::Pi() <= upperTrk.alpha() && upperTrk.alpha() < 0 )) {continue;}
+        if (lowerTrk.alpha() > 0 ) {continue;}
         if(lowerTrk.pt() < cfgCM.csmMuThrPt ) {continue;}
         if(lowerTrk.dcaXY() < cfgCM.csmMuThrDCAMin ) {continue;}
         if(lowerTrk.dcaXY() > cfgCM.csmMuThrDCAMax ) {continue;}
+        if(lowerTrk.tpcNClsFound() < 60 ) {continue;}
 
         if( lowerTrk.globalIndex() <= upperTrk.globalIndex()) {continue;} //Strictly upper index policy for fast grouping
-        if((upperTrk.signed1Pt() * lowerTrk.signed1Pt()) < 0) {continue;} //pair track should be of same sign
+        // if((upperTrk.signed1Pt() * lowerTrk.signed1Pt()) < 0) {continue;} //pair track should be of same sign
 
         fSumPtPair     = std::abs(upperTrk.pt()        + lowerTrk.pt());
         fSumQPtPair    = std::abs(upperTrk.signed1Pt() + lowerTrk.signed1Pt());
         fSumTglPair    = std::abs(upperTrk.tgl()       + lowerTrk.tgl());
-        // fSumDcaXYPair  = std::abs(upperTrk.dcaXY())    + std::abs(lowerTrk.dcaXY());
-        if( upperTrk.dcaXY() * lowerTrk.dcaXY() < 0 ){
-          fSumDcaXYPair  = std::abs(upperTrk.dcaXY())    + std::abs(lowerTrk.dcaXY());
-        }else {
-          fSumDcaXYPair  = std::abs(upperTrk.dcaXY() + lowerTrk.dcaXY());
-        }
+        fSumDcaXYPair  = std::abs(upperTrk.dcaXY())    + std::abs(lowerTrk.dcaXY());
         fSumAlphaPair  = std::abs(upperTrk.alpha()     + lowerTrk.alpha());
+
         fDiffPtPair    = std::abs(upperTrk.pt()        - lowerTrk.pt());
         fDiffQPtPair   = std::abs(upperTrk.signed1Pt() - lowerTrk.signed1Pt());
         fDiffTglPair   = std::abs(upperTrk.tgl()       - lowerTrk.tgl());
         fDiffDcaXYPair = std::abs(upperTrk.dcaXY()     - lowerTrk.dcaXY());
-        fDiffAlphaPair = std::abs(deltaAngleCalculator(upperTrk.alpha(),lowerTrk.alpha()));
+        fDiffAlphaPair = std::abs(std::abs((upperTrk.alpha()-lowerTrk.alpha()))-TMath::Pi());
 
+        // if( upperTrk.dcaXY() * lowerTrk.dcaXY() < 0 ){
+        //   fSumDcaXYPair  = std::abs(upperTrk.dcaXY())    + std::abs(lowerTrk.dcaXY());
+        // }else {
+        //   fSumDcaXYPair  = std::abs(upperTrk.dcaXY() + lowerTrk.dcaXY());
+        // }        
         recoEvent.fill(HIST("CosmicMuon/PreSel/sumPtPair"    ), fSumPtPair     );
         recoEvent.fill(HIST("CosmicMuon/PreSel/sumQPtPair"   ), fSumQPtPair    );
         recoEvent.fill(HIST("CosmicMuon/PreSel/sumTglPair"   ), fSumTglPair    );
@@ -3092,10 +3199,10 @@ struct trackqapidderivedata{
 
         if ( fSumPtPair < cfgCM.csmMuSumPtPair                                           ) { pairRejectionHist->Fill(kFailSumPtPair    ); continue;}
         if ( fSumQPtPair > cfgCM.csmMuSumQPtPair                                         ) { pairRejectionHist->Fill(kFailSumQPtPair   ); continue;} //}//
-        if ( fSumTglPair > cfgCM.csmMuSumTglPair                                         ) { pairRejectionHist->Fill(kFailSumTglPair   ); continue;} //}//
-        if (cfgCM.csmMuCheckSumDcaXY && fSumDcaXYPair > cfgCM.csmMuSumDcaXY              ) { pairRejectionHist->Fill(kFailSumDcaXY     ); }//continue;} //
-        if (cfgCM.csmMuCheckDiffAlphaPair && fDiffAlphaPair > cfgCM.csmMuDiffAlphaPair   ) { pairRejectionHist->Fill(kFailDiffAlphaPair); }//continue;} //
-        if (cfgCM.csmMuCheckDiffDcaXY && fDiffDcaXYPair > cfgCM.csmMuDiffDcaXY           ) { pairRejectionHist->Fill(kFailDiffDcaXY    ); }//continue;} //
+        // if ( fSumTglPair > cfgCM.csmMuSumTglPair                                         ) { pairRejectionHist->Fill(kFailSumTglPair   ); continue;} //}//
+        if (cfgCM.csmMuCheckSumDcaXY && fSumDcaXYPair > cfgCM.csmMuSumDcaXY              ) { pairRejectionHist->Fill(kFailSumDcaXY     ); continue;} //}//
+        if (cfgCM.csmMuCheckDiffAlphaPair && fDiffAlphaPair > cfgCM.csmMuDiffAlphaPair   ) { pairRejectionHist->Fill(kFailDiffAlphaPair); continue;} //}//
+        // if (cfgCM.csmMuCheckDiffDcaXY && fDiffDcaXYPair > cfgCM.csmMuDiffDcaXY           ) { pairRejectionHist->Fill(kFailDiffDcaXY    ); continue;} //}//
 
         recoEvent.fill(HIST("CosmicMuon/PostSel/sumPtPair"    ), fSumPtPair     );
         recoEvent.fill(HIST("CosmicMuon/PostSel/sumQPtPair"   ), fSumQPtPair    );
@@ -3218,7 +3325,6 @@ struct trackqapidderivedata{
           ,lowerTrkIndexPosition //global Id in single DF in derived Tracks
           ,lowerTrk.globalIndex() //original Id in single DF in original Tracks
 
-
           ,upperTrk.x() 	                // 
           ,upperTrk.alpha() 	            // 
           ,upperTrk.y() 	                // 
@@ -3333,20 +3439,20 @@ struct trackqapidderivedata{
           ,upperTrkTpcdEdxTot2R         //TPC dEdxQtot -ROC2/dEdx
           ,upperTrkTpcdEdxTot3R         //TPC dEdxQtot -ROC3/dEdx
           //
-          ,upperTrk.beta()
-          ,upperTrk.betaerror()
-          ,upperTrk.mass()
+          // ,upperTrk.beta()
+          // ,upperTrk.betaerror()
+          // ,upperTrk.mass()
 
-          ,codeSqrtScaling(upperTrk.tpcNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tofNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tpcNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tofNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tpcNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tofNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tpcNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tofNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tpcNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(upperTrk.tofNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tpcNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tofNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tpcNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tofNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tpcNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tofNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tpcNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tofNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tpcNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(upperTrk.tofNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
           
           ,upperTrk.tofSignal()
 
@@ -3483,20 +3589,20 @@ struct trackqapidderivedata{
           ,lowerTrkTpcdEdxTot2R         //TPC dEdxQtot -ROC2/dEdx
           ,lowerTrkTpcdEdxTot3R         //TPC dEdxQtot -ROC3/dEdx
           //
-          ,lowerTrk.beta()
-          ,lowerTrk.betaerror()
-          ,lowerTrk.mass()
+          // ,lowerTrk.beta()
+          // ,lowerTrk.betaerror()
+          // ,lowerTrk.mass()
 
-          ,codeSqrtScaling(lowerTrk.tpcNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tofNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tpcNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tofNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tpcNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tofNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tpcNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tofNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tpcNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-          ,codeSqrtScaling(lowerTrk.tofNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tpcNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tofNSigmaPi(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tpcNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tofNSigmaKa(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tpcNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tofNSigmaPr(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tpcNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tofNSigmaEl(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tpcNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+          // ,codeSqrtScaling(lowerTrk.tofNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
           
           ,lowerTrk.tofSignal()
 
@@ -3538,7 +3644,6 @@ struct trackqapidderivedata{
           ,lowerTrackTime
           ,lowerTrackTFidThis
           ,lowerTrackBcInTF
-
         );
         cosmicPairCounter++;
       }//lower track loop ends
@@ -3621,9 +3726,10 @@ struct trackqapidderivedata{
                ,o2::aod::OccIndexTable const& occIdxTable
                ,myOccsTable const& occTables
                ,myTrackMeanOccs const& trackMeanOccs
+               ,aod::TimeFramesTable const& timeFrames
               //  ,aod::ResoParts const& resoParts
               ){
-    executeProcess<false>(BCs, collisions, tracks, tracksQA, Origins, ambgTracks, FV0As, FT0s, V0s, D0s, occIdxTable, occTables, trackMeanOccs);
+    executeProcess<false>(BCs, collisions, tracks, tracksQA, Origins, ambgTracks, FV0As, FT0s, V0s, D0s, occIdxTable, occTables, trackMeanOccs, timeFrames);
   }
 
   PROCESS_SWITCH(trackqapidderivedata, processWithoutCentrality, "processWithoutCentrality", false);
@@ -3642,9 +3748,10 @@ struct trackqapidderivedata{
                ,o2::aod::OccIndexTable const& occIdxTable
                ,myOccsTable const& occTables
                ,myTrackMeanOccs const& trackMeanOccs
-              //  ,aod::ResoParts const& resoParts
+               ,aod::TimeFramesTable const& timeFrames
+               //  ,aod::ResoParts const& resoParts
               ){
-    executeProcess<true>(BCs, collisions, tracks, tracksQA, Origins, ambgTracks, FV0As, FT0s, V0s, D0s, occIdxTable, occTables, trackMeanOccs);
+    executeProcess<true>(BCs, collisions, tracks, tracksQA, Origins, ambgTracks, FV0As, FT0s, V0s, D0s, occIdxTable, occTables, trackMeanOccs, timeFrames);
   }
   PROCESS_SWITCH(trackqapidderivedata, processWithCentrality, "processWithCentrality", false);
 };
