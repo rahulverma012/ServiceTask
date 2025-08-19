@@ -230,14 +230,14 @@ DECLARE_SOA_COLUMN(GUCollId, guCollId, uint64_t);
 DECLARE_SOA_COLUMN(GLBCid, glbcId, uint64_t);
 DECLARE_SOA_COLUMN(GLCollId, glCollId, uint64_t);
 
-DECLARE_SOA_COLUMN(UTimestamp, uTimestamp, uint64_t);
-DECLARE_SOA_COLUMN(LTimestamp, lTimestamp, uint64_t);
+DECLARE_SOA_COLUMN(UTimestamp, uTimestamp, std::vector<int64_t>);
+DECLARE_SOA_COLUMN(LTimestamp, lTimestamp, std::vector<int64_t>);
 
-DECLARE_SOA_COLUMN(UTfId, uTfId, uint64_t);
-DECLARE_SOA_COLUMN(LTfId, lTfId, uint64_t);
+DECLARE_SOA_COLUMN(UTfId, uTfId, std::vector<int64_t>);
+DECLARE_SOA_COLUMN(LTfId, lTfId, std::vector<int64_t>);
 
-DECLARE_SOA_COLUMN(UBCinTF, uBCinTF, uint64_t);
-DECLARE_SOA_COLUMN(LBCinTF, lBCinTF, uint64_t);
+DECLARE_SOA_COLUMN(UBCinTF, uBCinTF, std::vector<int>);
+DECLARE_SOA_COLUMN(LBCinTF, lBCinTF, std::vector<int>);
 
 DECLARE_SOA_COLUMN(GCosmicPairId, gCosmicPairId, int64_t);
 
@@ -1929,20 +1929,20 @@ DECLARE_SOA_TABLE(DrCosmicPairs, "AOD", "DRCOSMICPAIRS", o2::soa::Index<>,
                   o2::aod::drcolmn::UTrkTpcdEdxTot2R,       // TPC dEdxQtot -ROC2/dEdx
                   o2::aod::drcolmn::UTrkTpcdEdxTot3R,       // TPC dEdxQtot -ROC3/dEdx
                   //
-                  o2::aod::drcolmn::UTrkBeta,
-                  o2::aod::drcolmn::UTrkBetaerror,
-                  o2::aod::drcolmn::UTrkMass,
+                //   o2::aod::drcolmn::UTrkBeta,
+                //   o2::aod::drcolmn::UTrkBetaerror,
+                //   o2::aod::drcolmn::UTrkMass,
 
-                  o2::aod::drcolmn::UTrkCTpcNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTofNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTpcNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTofNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTpcNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTofNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTpcNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTofNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTpcNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::UTrkCTofNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTpcNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTofNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTpcNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTofNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTpcNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTofNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTpcNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTofNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTpcNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::UTrkCTofNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
 
                   o2::aod::drcolmn::UTrkTofSignal,
 
@@ -2062,20 +2062,20 @@ DECLARE_SOA_TABLE(DrCosmicPairs, "AOD", "DRCOSMICPAIRS", o2::soa::Index<>,
                   o2::aod::drcolmn::LTrkTpcdEdxTot2R,       // TPC dEdxQtot -ROC2/dEdx
                   o2::aod::drcolmn::LTrkTpcdEdxTot3R,       // TPC dEdxQtot -ROC3/dEdx
                   //
-                  o2::aod::drcolmn::LTrkBeta,
-                  o2::aod::drcolmn::LTrkBetaerror,
-                  o2::aod::drcolmn::LTrkMass,
+                //   o2::aod::drcolmn::LTrkBeta,
+                //   o2::aod::drcolmn::LTrkBetaerror,
+                //   o2::aod::drcolmn::LTrkMass,
 
-                  o2::aod::drcolmn::LTrkCTpcNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTofNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTpcNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTofNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTpcNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTofNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTpcNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTofNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTpcNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
-                  o2::aod::drcolmn::LTrkCTofNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTpcNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTofNSigmaPi, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTpcNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTofNSigmaKa, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTpcNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTofNSigmaPr, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTpcNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTofNSigmaEl, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTpcNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
+                //   o2::aod::drcolmn::LTrkCTofNSigmaDe, //, cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
 
                   o2::aod::drcolmn::LTrkTofSignal,
 
