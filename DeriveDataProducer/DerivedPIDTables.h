@@ -230,14 +230,14 @@ DECLARE_SOA_COLUMN(GUCollId, guCollId, uint64_t);
 DECLARE_SOA_COLUMN(GLBCid, glbcId, uint64_t);
 DECLARE_SOA_COLUMN(GLCollId, glCollId, uint64_t);
 
-DECLARE_SOA_COLUMN(UTimestamp, uTimestamp, std::vector<int64_t>);
-DECLARE_SOA_COLUMN(LTimestamp, lTimestamp, std::vector<int64_t>);
+DECLARE_SOA_COLUMN(UTimestamp, uTimestamp, int64_t);//std::vector<int64_t>);
+DECLARE_SOA_COLUMN(LTimestamp, lTimestamp, int64_t);//std::vector<int64_t>);
 
-DECLARE_SOA_COLUMN(UTfId, uTfId, std::vector<int64_t>);
-DECLARE_SOA_COLUMN(LTfId, lTfId, std::vector<int64_t>);
+DECLARE_SOA_COLUMN(UTfId, uTfId, int64_t);// std::vector<int64_t>);
+DECLARE_SOA_COLUMN(LTfId, lTfId, int64_t);// std::vector<int64_t>);
 
-DECLARE_SOA_COLUMN(UBCinTF, uBCinTF, std::vector<int>);
-DECLARE_SOA_COLUMN(LBCinTF, lBCinTF, std::vector<int>);
+DECLARE_SOA_COLUMN(UBCinTF, uBCinTF, int64_t);// std::vector<int>);
+DECLARE_SOA_COLUMN(LBCinTF, lBCinTF, int64_t);// std::vector<int>);
 
 DECLARE_SOA_COLUMN(GCosmicPairId, gCosmicPairId, int64_t);
 
@@ -1659,6 +1659,7 @@ DECLARE_SOA_COLUMN(UTrkEta, uTrkEta, float);
 DECLARE_SOA_COLUMN(UTrkPhi, uTrkPhi, float);
 DECLARE_SOA_COLUMN(UTrkQPt, uTrkQPt, float);
 DECLARE_SOA_COLUMN(UTrkTgl, uTrkTgl, float);
+DECLARE_SOA_COLUMN(UTrkDcaCalc, uTrkDcaCalc, float);
 DECLARE_SOA_COLUMN(UTrkDcaXY, uTrkDcaXY, float);
 DECLARE_SOA_COLUMN(UTrkDcaZ, uTrkDcaZ, float);
 DECLARE_SOA_COLUMN(UTrkSigmaDcaXY2, uTrkSigmaDcaXY2, float);
@@ -1793,6 +1794,8 @@ DECLARE_SOA_COLUMN(LTrkEta, lTrkEta, float);
 DECLARE_SOA_COLUMN(LTrkPhi, lTrkPhi, float);
 DECLARE_SOA_COLUMN(LTrkQPt, lTrkQPt, float);
 DECLARE_SOA_COLUMN(LTrkTgl, lTrkTgl, float);
+
+DECLARE_SOA_COLUMN(LTrkDcaCalc, lTrkDcaCalc, float);
 DECLARE_SOA_COLUMN(LTrkDcaXY, lTrkDcaXY, float);
 DECLARE_SOA_COLUMN(LTrkDcaZ, lTrkDcaZ, float);
 DECLARE_SOA_COLUMN(LTrkSigmaDcaXY2, lTrkSigmaDcaXY2, float);
@@ -1802,6 +1805,7 @@ DECLARE_SOA_COLUMN(LTrkAlpha, lTrkAlpha, float);
 DECLARE_SOA_COLUMN(SumPtPair, sumPtPair, float);
 DECLARE_SOA_COLUMN(SumQPtPair, sumQPtPair, float);
 DECLARE_SOA_COLUMN(SumTglPair, sumTglPair, float);
+DECLARE_SOA_COLUMN(SumDcaCalcPair, sumDcaCalcPair, float);
 DECLARE_SOA_COLUMN(SumDcaXYPair, sumDcaXYPair, float);
 DECLARE_SOA_COLUMN(SumAlphaPair, sumAlphaPair, float);
 DECLARE_SOA_COLUMN(DiffPtPair, diffPtPair, float);
@@ -1809,6 +1813,7 @@ DECLARE_SOA_COLUMN(DiffQPtPair, diffQPtPair, float);
 DECLARE_SOA_COLUMN(DiffTglPair, diffTglPair, float);
 DECLARE_SOA_COLUMN(DiffDcaXYPair, diffDcaXYPair, float);
 DECLARE_SOA_COLUMN(DiffAlphaPair, diffAlphaPair, float);
+DECLARE_SOA_COLUMN(B_kG, b_kG, int8_t);
 
 }; // namespace drcolmn
 
@@ -1946,6 +1951,7 @@ DECLARE_SOA_TABLE(DrCosmicPairs, "AOD", "DRCOSMICPAIRS", o2::soa::Index<>,
 
                   o2::aod::drcolmn::UTrkTofSignal,
 
+                  o2::aod::drcolmn::UTrkDcaCalc ,       //	dcaXY	float	Impact parameter in XY of the track to the primary vertex                  
                   o2::aod::drcolmn::UTrkDcaXY,       //	dcaXY	float	Impact parameter in XY of the track to the primary vertex
                   o2::aod::drcolmn::UTrkDcaZ,        //	dcaZ	float	Impact parameter in Z of the track to the primary vertex
                   o2::aod::drcolmn::UTrkSigmaDcaXY2, //		sigmaDcaXY2	float	Impact parameter sigma^2 in XY of the track to the primary vertex
@@ -2079,6 +2085,7 @@ DECLARE_SOA_TABLE(DrCosmicPairs, "AOD", "DRCOSMICPAIRS", o2::soa::Index<>,
 
                   o2::aod::drcolmn::LTrkTofSignal,
 
+                  o2::aod::drcolmn::LTrkDcaCalc ,       //                
                   o2::aod::drcolmn::LTrkDcaXY,       //	dcaXY	float	Impact parameter in XY of the track to the primary vertex
                   o2::aod::drcolmn::LTrkDcaZ,        //	dcaZ	float	Impact parameter in Z of the track to the primary vertex
                   o2::aod::drcolmn::LTrkSigmaDcaXY2, //		sigmaDcaXY2	float	Impact parameter sigma^2 in XY of the track to the primary vertex
@@ -2100,6 +2107,7 @@ DECLARE_SOA_TABLE(DrCosmicPairs, "AOD", "DRCOSMICPAIRS", o2::soa::Index<>,
                   o2::aod::drcolmn::SumPtPair,
                   o2::aod::drcolmn::SumQPtPair,
                   o2::aod::drcolmn::SumTglPair,
+                  o2::aod::drcolmn::SumDcaCalcPair,
                   o2::aod::drcolmn::SumDcaXYPair,
                   o2::aod::drcolmn::SumAlphaPair,
 
@@ -2115,5 +2123,7 @@ DECLARE_SOA_TABLE(DrCosmicPairs, "AOD", "DRCOSMICPAIRS", o2::soa::Index<>,
 
                   o2::aod::drcolmn::LTimestamp,
                   o2::aod::drcolmn::LTfId,
-                  o2::aod::drcolmn::LBCinTF);
+                  o2::aod::drcolmn::LBCinTF,
+                  o2::aod::drcolmn::B_kG
+                );
 } // namespace o2::aod
