@@ -35,7 +35,13 @@
            },
            {
               "table": "AOD/DRCOSMICPAIRS/0"
-           }           
+           },
+           {
+              "table": "AOD/TMFMS/0"
+           },
+           {
+              "table": "AOD/TRACKTOTMFM/0"
+           }
          ],
        "ntfmerge": 1000000000
    },
