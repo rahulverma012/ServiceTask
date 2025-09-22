@@ -52,6 +52,9 @@
 #include "Common/Core/RecoDecay.h"
 #include "TPDGCode.h"
 
+#include "TableHelper.h"
+#include "Common/Tools/TrackTuner.h"
+
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::framework::expressions;
@@ -328,58 +331,60 @@ struct trackqapidderivedata{
   //Configurables
   
   Configurable<int> customOrbitOffset{"customOrbitOffset", 0, "customOrbitOffset for MC"};
-  Configurable<float> cfgDSMBfactorTracks{"cfgDSMBfactorTracks", 0.002, "cfgDSMBfactorTracks"};
-  Configurable<float> cfgDSPtfactorTracks{"cfgDSPtfactorTracks", 0.002, "cfgDSPtfactorTracks"};
 
-  Configurable<float> cfgDSMBfactorV0{"cfgDSMBfactorV0", 0.02, "cfgDSMBfactorV0"};
-  Configurable<float> cfgDSPtfactorV0{"cfgDSPtfactorV0", 0.02, "cfgDSPtfactorV0"};
+  struct : ConfigurableGroup {
+    Configurable<float> cfgDSMBfactorTracks{"cfgDSMBfactorTracks", 0.002, "cfgDSMBfactorTracks"};
+    Configurable<float> cfgDSPtfactorTracks{"cfgDSPtfactorTracks", 0.002, "cfgDSPtfactorTracks"};
 
-  Configurable<float> cfgDSMBfactorD0s{"cfgDSMBfactorD0s", 0.01, "cfgDSMBfactorD0s"};
-  Configurable<float> cfgDSPtfactorD0s{"cfgDSPtfactorD0s", 0.01, "cfgDSPtfactorD0s"};
+    Configurable<float> cfgDSMBfactorV0{"cfgDSMBfactorV0", 0.02, "cfgDSMBfactorV0"};
+    Configurable<float> cfgDSPtfactorV0{"cfgDSPtfactorV0", 0.02, "cfgDSPtfactorV0"};
 
-  Configurable<float> cfgDSMBfactorPhis{"cfgDSMBfactorPhis", 0.01, "cfgDSMBfactorPhis"};
-  Configurable<float> cfgDSPtfactorPhis{"cfgDSPtfactorPhis", 0.01, "cfgDSPtfactorPhis"};
+    Configurable<float> cfgDSMBfactorD0s{"cfgDSMBfactorD0s", 0.01, "cfgDSMBfactorD0s"};
+    Configurable<float> cfgDSPtfactorD0s{"cfgDSPtfactorD0s", 0.01, "cfgDSPtfactorD0s"};
 
-
-  Configurable<bool> cfgDoSkipDF{"cfgDoSkipDF", false, "cfgDoSkipDF"};
-  Configurable<int > cfgNSkipDF {"cfgNSkipDF" , 3    , "cfgNSkipDF"};
-
-  Configurable<bool> cfgDoDSOfTrack{"cfgDoDSOfTrack", false, "cfgDoDSOfTrack"};
-  Configurable<bool> cfgDoDSOfV0s  {"cfgDoDSOfV0s"  , false, "cfgDoDSOfV0s"};
-  Configurable<bool> cfgDoDSOfD0s  {"cfgDoDSOfD0s"  , false, "cfgDoDSOfD0s"};
-  Configurable<bool> cfgDoDSOfPhi  {"cfgDoDSOfPhi"  , false, "cfgDoDSOfPhi"};
-
-  Configurable<bool> cfgDoTableOfTrack{"cfgDoTableOfTrack", false, "cfgDoTableOfTrack"};
-  Configurable<bool> cfgDoTableOfV0s  {"cfgDoTableOfV0s"  , false, "cfgDoTableOfV0s"};
-  Configurable<bool> cfgDoTableOfD0s  {"cfgDoTableOfD0s"  , false, "cfgDoTableOfD0s"};
-  Configurable<bool> cfgDoTableOfPhi  {"cfgDoTableOfPhi"  , false, "cfgDoTableOfPhi"};
+    Configurable<float> cfgDSMBfactorPhis{"cfgDSMBfactorPhis", 0.01, "cfgDSMBfactorPhis"};
+    Configurable<float> cfgDSPtfactorPhis{"cfgDSPtfactorPhis", 0.01, "cfgDSPtfactorPhis"};
 
 
-  Configurable<bool> doV0andTrackMatchingCheck{"doV0andTrackMatchingCheck", true, "doV0andTrackMatchingCheck"};
-  Configurable<bool> doD0andTrackMatchingCheck{"doD0andTrackMatchingCheck", true, "doD0andTrackMatchingCheck"};
+    Configurable<bool> cfgDoSkipDF{"cfgDoSkipDF", false, "cfgDoSkipDF"};
+    Configurable<int > cfgNSkipDF {"cfgNSkipDF" , 3    , "cfgNSkipDF"};
 
-  Configurable<float> cfgMLowLambda          {"cfgMLowLambda"          , 1.10, "cfgMLowLambda"          };
-  Configurable<float> cfgMLowAntiLambda      {"cfgMLowAntiLambda"      , 1.10, "cfgMLowAntiLambda"      };
-  Configurable<float> cfgMLowK0Short         {"cfgMLowK0Short"         , 0.47, "cfgMLowK0Short"         };
-  Configurable<float> cfgMLowGamma           {"cfgMLowGamma"           ,-0.01, "cfgMLowGamma"           };
-  Configurable<float> cfgMLowHypertriton     {"cfgMLowHypertriton"     ,  2.9, "cfgMLowHypertriton"     };
-  Configurable<float> cfgMLowAntiHypertriton {"cfgMLowAntiHypertriton" ,  2.9, "cfgMLowAntiHypertriton" };
+    Configurable<bool> cfgDoDSOfTrack{"cfgDoDSOfTrack", false, "cfgDoDSOfTrack"};
+    Configurable<bool> cfgDoDSOfV0s  {"cfgDoDSOfV0s"  , false, "cfgDoDSOfV0s"};
+    Configurable<bool> cfgDoDSOfD0s  {"cfgDoDSOfD0s"  , false, "cfgDoDSOfD0s"};
+    Configurable<bool> cfgDoDSOfPhi  {"cfgDoDSOfPhi"  , false, "cfgDoDSOfPhi"};
 
-  Configurable<float> cfgMHighLambda         {"cfgMHighLambda"         , 1.13, "cfgMHighLambda"         };
-  Configurable<float> cfgMHighAntiLambda     {"cfgMHighAntiLambda"     , 1.13, "cfgMHighAntiLambda"     };
-  Configurable<float> cfgMHighK0Short        {"cfgMHighK0Short"        , 0.52, "cfgMHighK0Short"        };
-  Configurable<float> cfgMHighGamma          {"cfgMHighGamma"          , 0.02, "cfgMHighGamma"          };
-  Configurable<float> cfgMHighHypertriton    {"cfgMHighHypertriton"    ,  3.1, "cfgMHighHypertriton"    };
-  Configurable<float> cfgMHighAntiHypertriton{"cfgMHighAntiHypertriton",  3.1, "cfgMHighAntiHypertriton"};
+    Configurable<bool> cfgDoTableOfTrack{"cfgDoTableOfTrack", false, "cfgDoTableOfTrack"};
+    Configurable<bool> cfgDoTableOfV0s  {"cfgDoTableOfV0s"  , false, "cfgDoTableOfV0s"};
+    Configurable<bool> cfgDoTableOfD0s  {"cfgDoTableOfD0s"  , false, "cfgDoTableOfD0s"};
+    Configurable<bool> cfgDoTableOfPhi  {"cfgDoTableOfPhi"  , false, "cfgDoTableOfPhi"};
 
-  Configurable<float> cfgMLowD0 {"cfgMLowD0", 1.862, "cfgMLowD0"};
-  Configurable<float> cfgMLowD0Bar {"cfgMLowD0Bar", 1.862, "cfgMLowD0Bar"};
-  Configurable<float> cfgMHighD0   {"cfgMHighD0", 1.868, "cfgMHighD0"};
-  Configurable<float> cfgMHighD0Bar {"cfgMHighD0Bar", 1.868, "cfgMHighD0Bar"};
 
-  Configurable<float> cfgMLowPhi {"cfgMLowPhi", 1.013, "cfgMLowPhi"};
-  Configurable<float> cfgMHighPhi {"cfgMHighPhi", 1.026, "cfgMHighPhi"};
+    Configurable<bool> doV0andTrackMatchingCheck{"doV0andTrackMatchingCheck", true, "doV0andTrackMatchingCheck"};
+    Configurable<bool> doD0andTrackMatchingCheck{"doD0andTrackMatchingCheck", true, "doD0andTrackMatchingCheck"};
 
+    Configurable<float> cfgMLowLambda          {"cfgMLowLambda"          , 1.10, "cfgMLowLambda"          };
+    Configurable<float> cfgMLowAntiLambda      {"cfgMLowAntiLambda"      , 1.10, "cfgMLowAntiLambda"      };
+    Configurable<float> cfgMLowK0Short         {"cfgMLowK0Short"         , 0.47, "cfgMLowK0Short"         };
+    Configurable<float> cfgMLowGamma           {"cfgMLowGamma"           ,-0.01, "cfgMLowGamma"           };
+    Configurable<float> cfgMLowHypertriton     {"cfgMLowHypertriton"     ,  2.9, "cfgMLowHypertriton"     };
+    Configurable<float> cfgMLowAntiHypertriton {"cfgMLowAntiHypertriton" ,  2.9, "cfgMLowAntiHypertriton" };
+
+    Configurable<float> cfgMHighLambda         {"cfgMHighLambda"         , 1.13, "cfgMHighLambda"         };
+    Configurable<float> cfgMHighAntiLambda     {"cfgMHighAntiLambda"     , 1.13, "cfgMHighAntiLambda"     };
+    Configurable<float> cfgMHighK0Short        {"cfgMHighK0Short"        , 0.52, "cfgMHighK0Short"        };
+    Configurable<float> cfgMHighGamma          {"cfgMHighGamma"          , 0.02, "cfgMHighGamma"          };
+    Configurable<float> cfgMHighHypertriton    {"cfgMHighHypertriton"    ,  3.1, "cfgMHighHypertriton"    };
+    Configurable<float> cfgMHighAntiHypertriton{"cfgMHighAntiHypertriton",  3.1, "cfgMHighAntiHypertriton"};
+
+    Configurable<float> cfgMLowD0     {"cfgMLowD0"    , 1.862, "cfgMLowD0"};
+    Configurable<float> cfgMLowD0Bar  {"cfgMLowD0Bar" , 1.862, "cfgMLowD0Bar"};
+    Configurable<float> cfgMHighD0    {"cfgMHighD0"   , 1.868, "cfgMHighD0"};
+    Configurable<float> cfgMHighD0Bar {"cfgMHighD0Bar", 1.868, "cfgMHighD0Bar"};
+
+    Configurable<float> cfgMLowPhi {"cfgMLowPhi"  , 1.013, "cfgMLowPhi"};
+    Configurable<float> cfgMHighPhi {"cfgMHighPhi", 1.026, "cfgMHighPhi"};
+  } cfgDS; 
   
   struct : ConfigurableGroup{
     Configurable<float> z0ThrPt {"z0ThrPt",20,"z0ThrPt"};
@@ -392,7 +397,7 @@ struct trackqapidderivedata{
 
   struct : ConfigurableGroup {
   Configurable<float> csmMuThrPt        {"csmMuThrPt"        , 0.5, "csmMuThrPt"};
-  Configurable<float> csmMuThrDCAMin    {"csmMuThrDCAMin"    , 0.5, "csmMuThrDCAMin"};
+  Configurable<float> csmMuThrDCAMin    {"csmMuThrDCAMin"    , 2.0, "csmMuThrDCAMin"};
   Configurable<float> csmMuThrDCAMax    {"csmMuThrDCAMax"    , 120, "csmMuThrDCAMax"};
 
   Configurable<float> csmMuSumPtPair    {"csmMuSumPtPair"    , 2.0 , "csmMuSumPtPair"};
@@ -756,6 +761,76 @@ struct trackqapidderivedata{
     return evaluatedFitValue;
   }
 
+  int runNumber = -1;
+  // o2::base::Propagator::MatCorrType matCorr = o2::base::Propagator::MatCorrType::USEMatCorrLUT;
+
+  const o2::dataformats::MeanVertexObject* mMeanVtx = nullptr;
+  o2::parameters::GRPMagField* grpmag = nullptr;
+  o2::base::MatLayerCylSet* lut = nullptr;
+  // TrackTuner trackTunerObj;
+  int8_t B_kG; 
+
+  struct : ConfigurableGroup {
+    // Configurable<std::string> ccdburl{"ccdb-url", "http://alice-ccdb.cern.ch", "url of the ccdb repository"};
+    Configurable<std::string> lutPath{"lutPath", "GLO/Param/MatLUT", "Path of the Lut parametrization"};
+    // Configurable<std::string> geoPath{"geoPath", "GLO/Config/GeometryAligned", "Path of the geometry file"};
+    Configurable<std::string> grpmagPath{"grpmagPath", "GLO/Config/GRPMagField", "CCDB path of the GRPMagField object"};
+    Configurable<std::string> mVtxPath{"mVtxPath", "GLO/Calib/MeanVertex", "Path of the mean vertex file"};
+    // Configurable<float> minPropagationRadius{"minPropagationDistance", o2::constants::geom::XTPCInnerRef + 0.1, "Only tracks which are at a smaller radius will be propagated, defaults to TPC inner wall"};
+  } cfgB; 
+
+  template<typename T>
+  void initCCDB(const T& bc)
+  {
+    if (runNumber == bc.runNumber()) {
+      return;
+    }
+
+    // load matLUT for this timestamp
+    if (!lut) {
+      LOG(info) << "Loading material look-up table for timestamp: " << bc.timestamp();
+      lut = o2::base::MatLayerCylSet::rectifyPtrFromFile(ccdb->getForTimeStamp<o2::base::MatLayerCylSet>(cfgB.lutPath, bc.timestamp()));
+    } else {
+      LOG(info) << "Material look-up table already in place. Not reloading.";
+    }
+
+    grpmag = ccdb->getForTimeStamp<o2::parameters::GRPMagField>(cfgB.grpmagPath, bc.timestamp());
+    B_kG = grpmag->getNominalL3Field();
+    runNumber = bc.runNumber();
+  }
+
+  static constexpr double kB2C = 0.299792458;
+  static constexpr double kAlmost0Field = 1e-4;
+  double getCurvature(double signed1Pt, double b){ return signed1Pt * b * kB2C; }
+  double getDCA(double trackX, double trackY, double alpha, double snp, double signed1Pt, 
+                  double xRef, double yRef, double b)
+  {
+      // Handle zero or near-zero magnetic field by simple linear distance
+      if (std::abs(b) < kAlmost0Field) { return std::hypot(trackX - xRef, trackY - yRef);}
+
+      double curvature = getCurvature(signed1Pt, b);
+
+      // Rotate reference point into track frame (rotation by -alpha)
+      double sinAlpha = std::sin(alpha);
+      double cosAlpha = std::cos(alpha);
+
+      double xRot = xRef * cosAlpha + yRef * sinAlpha;
+      double yRot = -xRef * sinAlpha + yRef * cosAlpha;
+
+      // Compute difference vector in local track frame
+      double dx = trackX - xRot;
+      double dy = trackY - yRot;
+
+      double sqrtTerm = std::sqrt((1.0 - snp) * (1.0 + snp));
+
+      double sn = curvature * dx - snp;
+      double cs = curvature * dy + sqrtTerm;
+
+      double numerator = 2.0 * (dx * snp - dy * sqrtTerm) - curvature * (dx * dx + dy * dy);
+      double denominator = 1.0 + std::sqrt(sn * sn + cs * cs);
+
+      return -numerator / denominator;
+  }
 
   template<int motherMode, typename T>
   void getMotherListFromDaughterList( const int64_t &Key, const std::vector<int64_t> &dauList, std::vector<int64_t> &trigV0List, std::vector<int64_t> &newMotherList, const T& V0s){
@@ -764,7 +839,7 @@ struct trackqapidderivedata{
         // LOG(info)<<"DEBUG :: Key :: "<<Key<<" :: pos = "<<i<<" :: trigV0 = "<<trigV0List[i]<<" :: GI of V0 at it = "<<V0s.iteratorAt(trigV0List[i]).globalIndex()<<" :: posTrackId() = "<<V0s.iteratorAt(trigV0List[i]).posTrackId() ;
         if constexpr (motherMode == kV0)
         {
-          if(doV0andTrackMatchingCheck){ if(V0s.iteratorAt(trigV0List[i]).posTrackId() != Key && V0s.iteratorAt(trigV0List[i]).negTrackId() != Key){
+          if(cfgDS.doV0andTrackMatchingCheck){ if(V0s.iteratorAt(trigV0List[i]).posTrackId() != Key && V0s.iteratorAt(trigV0List[i]).negTrackId() != Key){
             LOG(info)<<"DEBUG :: v0 Information checking :: something is wrong :: check the errors :: Indices not mathcing";
             LOG(info)<<"Key :: "<<Key<<" :: ";
           }}
@@ -772,7 +847,7 @@ struct trackqapidderivedata{
         }
         else if constexpr (motherMode == kD0)
         {
-          if(doD0andTrackMatchingCheck){ if(V0s.iteratorAt(trigV0List[i]).prong0Id() != Key && V0s.iteratorAt(trigV0List[i]).prong1Id() != Key){
+          if(cfgDS.doD0andTrackMatchingCheck){ if(V0s.iteratorAt(trigV0List[i]).prong0Id() != Key && V0s.iteratorAt(trigV0List[i]).prong1Id() != Key){
             LOG(info)<<"DEBUG :: D0 Information checking :: something is wrong :: check the errors :: Indices not mathcing";
             LOG(info)<<"Key :: "<<Key<<" :: ";
           }}
@@ -935,101 +1010,15 @@ struct trackqapidderivedata{
 
     //check if timeframe Is sorted or not
     
-    for( auto tf: timeFrames ){
-      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.globalIndex() = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame(); 
-    }
+    // for( auto tf: timeFrames ){
+    //   LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.globalIndex() = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame(); 
+    // }
 
     std::vector<int64_t> trackGIList ;
     std::vector<int64_t> trackTFIdList ;
     std::vector<int64_t> derefernceTFList ;
-
-    for ( auto track : tracks ){
-      trackGIList.push_back(track.globalIndex());
-      trackTFIdList.push_back(track.tfId());
-      derefernceTFList.push_back(track.template tf_as<D>().timeFrame());
-    }
-
-    if(std::is_sorted(trackGIList.begin(), trackGIList.end())){
-      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: track.globalIndex() is Sorted";
-    } else{
-      LOG(info)<<"DEBUG :: ERROR ERROR ERROR :: df_"<<dfCount<<"track.globalIndex() is UnSorted";
-    }
-
-    if(std::is_sorted(trackTFIdList.begin(), trackTFIdList.end())){
-      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: track.tfId() is Sorted";
-    } else{
-      LOG(info)<<"DEBUG :: ERROR ERROR ERROR :: df_"<<dfCount<<"track.tfId() is UnSorted";
-    }
-
-    if(std::is_sorted(derefernceTFList.begin(), derefernceTFList.end())){
-      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: track.tf_as<D>().timeFrame() is Sorted";
-    } else{
-      LOG(info)<<"DEBUG :: ERROR ERROR ERROR :: df_"<<dfCount<<" track.tf_as<D>().timeFrame() is UnSorted";
-    }
-
-    auto endIt = std::unique(derefernceTFList.begin(), derefernceTFList.end());
-    derefernceTFList.erase(endIt, derefernceTFList.end());
-
-    // std::sort(uniqueTFList.begin(), uniqueTFList.end());
-    // auto It = std::unique(uniqueTFList.begin(), uniqueTFList.end());
-    // uniqueTFList.erase(It, uniqueTFList.end()); // remove the duplicate entries
-
-
-    LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: derefernceTFList.size() = "<<derefernceTFList.size();
-    for(const auto&tfValues : derefernceTFList ){
-      LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tfValues = "<<tfValues;
-    }
-
-    int nTracks[3]; 
-    nTracks[0] = 0; //kPos
-    nTracks[1] = 0; //kNeg
-    nTracks[2] = 0; //kTotal
-
+    
     // // can a track belong to many timeframes?
-    // for( auto tf: timeFrames ){
-    //   // //Partition positvie and negative tracks to time frames
-    //   // LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.globalIndex() = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame(); 
-    //   // auto posTracks_perTF = posTracks->sliceByCached(aod::track::tfId, tf.globalIndex(), cache);
-    //   // auto negTracks_perTF = negTracks->sliceByCached(aod::track::tfId, tf.globalIndex(), cache);
-    //   // LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: "<<tf.globalIndex()<<" :: posTracks = "<<posTracks_perTF.size()<<" :: negTracks = "<<negTracks_perTF.size();
-    //   // nTracks[0] += posTracks_perTF.size();
-    //   // nTracks[1] += negTracks_perTF.size();
-    //   const auto TracksTable_perTF =   tracks.sliceBy( TracksPerTfPreSlice, tf.globalIndex());
-    //   LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.GI = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame()<<" :: TracksTable_perTF.size() = "<<TracksTable_perTF.size();
-    //   int nCollTrks = 0; 
-    //   int nAmbgTrks = 0;
-    //   for( const auto& track : TracksTable_perTF){
-    //     if(track.collisionId() < 0){
-    //       nAmbgTrks++;
-    //       auto bcs = track.template ambgTrack_as<aod::AmbiguousTracks>().template bc_as<myBCTable>();
-    //       for (const auto& bc: bcs){
-    //         GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
-    //         if(TFidThis != tf.timeFrame()){
-    //           if( dfCount == 1) { LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: Mismatch ambg:: tfIdThis = "<<TFidThis<<" :: tf.timeFrame() = "<<tf.timeFrame();}
-    //         }
-    //       }
-    //     } else {
-    //       auto bc = track.template collision_as<C>().template bc_as<myBCTable>();
-    //       GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
-    //       if(TFidThis != tf.timeFrame()){
-    //         if( dfCount == 1) { LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: Mismatch coll:: TFidThis = "<<TFidThis<<" :: tf.timeFrame() = "<<tf.timeFrame();}
-    //       }
-    //       nCollTrks++;
-    //     }
-    //   }
-    //   LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: tf.GI = "<<tf.globalIndex()<<" :: tf.timeFrame() = "<<tf.timeFrame()<<" :: nAmbgTrks = "<<nAmbgTrks<<" :: nCollTrks = "<<nCollTrks;
-
-    //   nTracks[0] += TracksTable_perTF.size();
-    // }
-    // nTracks[2] = nTracks[0] + nTracks[1];
-
-    // if( nTracks[2] != tracks.size()) {
-    //   LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: ERROR ERROR ERROR ::  nTracks[2] != tracks.size() i.e. "<<nTracks[2]<<" != "<<tracks.size();
-    // }
-
-      // const uint64_t collIdx = collision.globalIndex();
-      // const auto TracksTable_perColl =   tracks.sliceBy( TracksPerCollisionPreslice, collIdx);
-      
 
     auto StartOcc = std::chrono::high_resolution_clock::now();
     for(auto const& myocc : occTables){
@@ -1299,12 +1288,12 @@ struct trackqapidderivedata{
       bool isHypertriton     = false;
       bool isAntiHypertriton = false;
 
-      if (cfgMLowLambda          < v0.mLambda()          && v0.mLambda()          < cfgMHighLambda          ){ isLambda          = true;}
-      if (cfgMLowAntiLambda      < v0.mAntiLambda()      && v0.mAntiLambda()      < cfgMHighAntiLambda      ){ isAntiLambda      = true;}
-      if (cfgMLowK0Short         < v0.mK0Short()         && v0.mK0Short()         < cfgMHighK0Short         ){ isK0Short         = true;}
-      if (cfgMLowGamma           < v0.mGamma()           && v0.mGamma()           < cfgMHighGamma           ){ isGamma           = true;}
-      if (cfgMLowHypertriton     < v0.mHypertriton()     && v0.mHypertriton()     < cfgMHighHypertriton     ){ isHypertriton     = true;}
-      if (cfgMLowAntiHypertriton < v0.mAntiHypertriton() && v0.mAntiHypertriton() < cfgMHighAntiHypertriton ){ isAntiHypertriton = true;}
+      if (cfgDS.cfgMLowLambda          < v0.mLambda()          && v0.mLambda()          < cfgDS.cfgMHighLambda          ){ isLambda          = true;}
+      if (cfgDS.cfgMLowAntiLambda      < v0.mAntiLambda()      && v0.mAntiLambda()      < cfgDS.cfgMHighAntiLambda      ){ isAntiLambda      = true;}
+      if (cfgDS.cfgMLowK0Short         < v0.mK0Short()         && v0.mK0Short()         < cfgDS.cfgMHighK0Short         ){ isK0Short         = true;}
+      if (cfgDS.cfgMLowGamma           < v0.mGamma()           && v0.mGamma()           < cfgDS.cfgMHighGamma           ){ isGamma           = true;}
+      if (cfgDS.cfgMLowHypertriton     < v0.mHypertriton()     && v0.mHypertriton()     < cfgDS.cfgMHighHypertriton     ){ isHypertriton     = true;}
+      if (cfgDS.cfgMLowAntiHypertriton < v0.mAntiHypertriton() && v0.mAntiHypertriton() < cfgDS.cfgMHighAntiHypertriton ){ isAntiHypertriton = true;}
 
       recoEvent.fill(HIST("Event/V0/h_Pt"),v0.pt());
       if( isLambda          ){ recoEvent.fill(HIST("Event/Lambda/h_Pt"          ),v0.pt());}
@@ -1343,12 +1332,12 @@ struct trackqapidderivedata{
       bool isHypertriton     = false;
       bool isAntiHypertriton = false;
 
-      if (cfgMLowLambda          < v0.mLambda()          && v0.mLambda()          < cfgMHighLambda          ){ isLambda          = true;}
-      if (cfgMLowAntiLambda      < v0.mAntiLambda()      && v0.mAntiLambda()      < cfgMHighAntiLambda      ){ isAntiLambda      = true;}
-      if (cfgMLowK0Short         < v0.mK0Short()         && v0.mK0Short()         < cfgMHighK0Short         ){ isK0Short         = true;}
-      if (cfgMLowGamma           < v0.mGamma()           && v0.mGamma()           < cfgMHighGamma           ){ isGamma           = true;}
-      if (cfgMLowHypertriton     < v0.mHypertriton()     && v0.mHypertriton()     < cfgMHighHypertriton     ){ isHypertriton     = true;}
-      if (cfgMLowAntiHypertriton < v0.mAntiHypertriton() && v0.mAntiHypertriton() < cfgMHighAntiHypertriton ){ isAntiHypertriton = true;}
+      if (cfgDS.cfgMLowLambda          < v0.mLambda()          && v0.mLambda()          < cfgDS.cfgMHighLambda          ){ isLambda          = true;}
+      if (cfgDS.cfgMLowAntiLambda      < v0.mAntiLambda()      && v0.mAntiLambda()      < cfgDS.cfgMHighAntiLambda      ){ isAntiLambda      = true;}
+      if (cfgDS.cfgMLowK0Short         < v0.mK0Short()         && v0.mK0Short()         < cfgDS.cfgMHighK0Short         ){ isK0Short         = true;}
+      if (cfgDS.cfgMLowGamma           < v0.mGamma()           && v0.mGamma()           < cfgDS.cfgMHighGamma           ){ isGamma           = true;}
+      if (cfgDS.cfgMLowHypertriton     < v0.mHypertriton()     && v0.mHypertriton()     < cfgDS.cfgMHighHypertriton     ){ isHypertriton     = true;}
+      if (cfgDS.cfgMLowAntiHypertriton < v0.mAntiHypertriton() && v0.mAntiHypertriton() < cfgDS.cfgMHighAntiHypertriton ){ isAntiHypertriton = true;}
 
       recoEvent.fill(HIST("Event/K0Short/h_Mass_Full"), v0.mK0Short());
       recoEvent.fill(HIST("Event/Lambda/h_Mass_Full"), v0.mLambda());
@@ -1357,7 +1346,7 @@ struct trackqapidderivedata{
       recoEvent.fill(HIST("Event/Hypertriton/h_Mass_Full"), v0.mHypertriton());
       recoEvent.fill(HIST("Event/AntiHypertriton/h_Mass_Full"), v0.mAntiHypertriton());
 
-      if(cfgDoSkipDF && (dfCount < cfgNSkipDF)) {continue;}
+      if(cfgDS.cfgDoSkipDF && (dfCount < cfgDS.cfgNSkipDF)) {continue;}
 
       weightDSPt[kV0]              = -999.0 , probRatioPt[kV0]              = -999.0;
       weightDSPt[kLambda]          = -999.0 , probRatioPt[kLambda]          = -999.0;
@@ -1375,13 +1364,13 @@ struct trackqapidderivedata{
       isDownsampledMB[kHypertriton]     = false;
       isDownsampledMB[kAntiHypertriton] = false;
 
-      isDownsampledMB[kV0]              = gRandom->Rndm()<cfgDSMBfactorV0;
-      if( isLambda          ){isDownsampledMB[kLambda]          = gRandom->Rndm()<cfgDSMBfactorV0;}
-      if( isAntiLambda      ){isDownsampledMB[kAntiLambda]      = gRandom->Rndm()<cfgDSMBfactorV0;}
-      if( isK0Short         ){isDownsampledMB[kK0Short]         = gRandom->Rndm()<cfgDSMBfactorV0;}
-      if( isGamma           ){isDownsampledMB[kGamma]           = gRandom->Rndm()<cfgDSMBfactorV0;}
-      if( isHypertriton     ){isDownsampledMB[kHypertriton]     = gRandom->Rndm()<cfgDSMBfactorV0;}
-      if( isAntiHypertriton ){isDownsampledMB[kAntiHypertriton] = gRandom->Rndm()<cfgDSMBfactorV0;}
+      isDownsampledMB[kV0]              = gRandom->Rndm()<cfgDS.cfgDSMBfactorV0;
+      if( isLambda          ){isDownsampledMB[kLambda]          = gRandom->Rndm()<cfgDS.cfgDSMBfactorV0;}
+      if( isAntiLambda      ){isDownsampledMB[kAntiLambda]      = gRandom->Rndm()<cfgDS.cfgDSMBfactorV0;}
+      if( isK0Short         ){isDownsampledMB[kK0Short]         = gRandom->Rndm()<cfgDS.cfgDSMBfactorV0;}
+      if( isGamma           ){isDownsampledMB[kGamma]           = gRandom->Rndm()<cfgDS.cfgDSMBfactorV0;}
+      if( isHypertriton     ){isDownsampledMB[kHypertriton]     = gRandom->Rndm()<cfgDS.cfgDSMBfactorV0;}
+      if( isAntiHypertriton ){isDownsampledMB[kAntiHypertriton] = gRandom->Rndm()<cfgDS.cfgDSMBfactorV0;}
 
       isDownsampledPT[kV0]              = false;
       isDownsampledPT[kLambda]          = false;
@@ -1391,18 +1380,18 @@ struct trackqapidderivedata{
       isDownsampledPT[kHypertriton]     = false;
       isDownsampledPT[kAntiHypertriton] = false;
 
-      isDownsampledPT[kV0]              = checkTriggerPt(v0.pt(), cfgDSPtfactorV0, weightDSPt[kV0]              , probRatioPt[kV0]              , recoEvent.get<TH1>(HIST("Event/V0/h_Pt"              )));
-      if( isLambda          ){isDownsampledPT[kLambda]          = checkTriggerPt(v0.pt(), cfgDSPtfactorV0, weightDSPt[kLambda]          , probRatioPt[kLambda]          , recoEvent.get<TH1>(HIST("Event/Lambda/h_Pt"          )));}
-      if( isAntiLambda      ){isDownsampledPT[kAntiLambda]      = checkTriggerPt(v0.pt(), cfgDSPtfactorV0, weightDSPt[kAntiLambda]      , probRatioPt[kAntiLambda]      , recoEvent.get<TH1>(HIST("Event/AntiLambda/h_Pt"      )));}
-      if( isK0Short         ){isDownsampledPT[kK0Short]         = checkTriggerPt(v0.pt(), cfgDSPtfactorV0, weightDSPt[kK0Short]         , probRatioPt[kK0Short]         , recoEvent.get<TH1>(HIST("Event/K0Short/h_Pt"         )));}
-      // if( isGamma           ){isDownsampledPT[kGamma]           = checkTriggerPt(v0.pt(), cfgDSPtfactorV0, weightDSPt[kGamma]           , probRatioPt[kGamma]           , recoEvent.get<TH1>(HIST("Event/Gamma/h_Pt"           )));}
-      // if( isHypertriton     ){isDownsampledPT[kHypertriton]     = checkTriggerPt(v0.pt(), cfgDSPtfactorV0, weightDSPt[kHypertriton]     , probRatioPt[kHypertriton]     , recoEvent.get<TH1>(HIST("Event/Hypertriton/h_Pt"     )));}
-      // if( isAntiHypertriton ){isDownsampledPT[kAntiHypertriton] = checkTriggerPt(v0.pt(), cfgDSPtfactorV0, weightDSPt[kAntiHypertriton] , probRatioPt[kAntiHypertriton] , recoEvent.get<TH1>(HIST("Event/AntiHypertriton/h_Pt" )));}
+      isDownsampledPT[kV0]              = checkTriggerPt(v0.pt(), cfgDS.cfgDSPtfactorV0, weightDSPt[kV0]              , probRatioPt[kV0]              , recoEvent.get<TH1>(HIST("Event/V0/h_Pt"              )));
+      if( isLambda          ){isDownsampledPT[kLambda]          = checkTriggerPt(v0.pt(), cfgDS.cfgDSPtfactorV0, weightDSPt[kLambda]          , probRatioPt[kLambda]          , recoEvent.get<TH1>(HIST("Event/Lambda/h_Pt"          )));}
+      if( isAntiLambda      ){isDownsampledPT[kAntiLambda]      = checkTriggerPt(v0.pt(), cfgDS.cfgDSPtfactorV0, weightDSPt[kAntiLambda]      , probRatioPt[kAntiLambda]      , recoEvent.get<TH1>(HIST("Event/AntiLambda/h_Pt"      )));}
+      if( isK0Short         ){isDownsampledPT[kK0Short]         = checkTriggerPt(v0.pt(), cfgDS.cfgDSPtfactorV0, weightDSPt[kK0Short]         , probRatioPt[kK0Short]         , recoEvent.get<TH1>(HIST("Event/K0Short/h_Pt"         )));}
+      // if( isGamma           ){isDownsampledPT[kGamma]           = checkTriggerPt(v0.pt(), cfgDS.cfgDSPtfactorV0, weightDSPt[kGamma]           , probRatioPt[kGamma]           , recoEvent.get<TH1>(HIST("Event/Gamma/h_Pt"           )));}
+      // if( isHypertriton     ){isDownsampledPT[kHypertriton]     = checkTriggerPt(v0.pt(), cfgDS.cfgDSPtfactorV0, weightDSPt[kHypertriton]     , probRatioPt[kHypertriton]     , recoEvent.get<TH1>(HIST("Event/Hypertriton/h_Pt"     )));}
+      // if( isAntiHypertriton ){isDownsampledPT[kAntiHypertriton] = checkTriggerPt(v0.pt(), cfgDS.cfgDSPtfactorV0, weightDSPt[kAntiHypertriton] , probRatioPt[kAntiHypertriton] , recoEvent.get<TH1>(HIST("Event/AntiHypertriton/h_Pt" )));}
       
       int triggerMaskV0 = (1<<0 )*isDownsampledMB[kV0]+(1<<1 )*isDownsampledMB[kLambda]+(1<<2 )*isDownsampledMB[kAntiLambda]+(1<<3 )*isDownsampledMB[kK0Short]
                         + (1<<10)*isDownsampledPT[kV0]+(1<<11)*isDownsampledPT[kLambda]+(1<<12)*isDownsampledPT[kAntiLambda]+(1<<13)*isDownsampledPT[kK0Short];
 
-      if( cfgDoDSOfV0s && (triggerMaskV0 == 0)) {   
+      if( cfgDS.cfgDoDSOfV0s && (triggerMaskV0 == 0)) {   
         if( isLambda          ){recoEvent.fill(HIST("Event/K0Short/h_Mass_Rejected")        , v0.mK0Short()        );}
         if( isAntiLambda      ){recoEvent.fill(HIST("Event/Lambda/h_Mass_Rejected")         , v0.mLambda()         );}
         if( isK0Short         ){recoEvent.fill(HIST("Event/AntiLambda/h_Mass_Rejected")     , v0.mAntiLambda()     );}
@@ -1475,23 +1464,23 @@ struct trackqapidderivedata{
       if( posTrack.globalIndex() != posKaOIlist[phiCand] ) { LOG(error)<<"DEBUG :: ERROR ERROR ERROR :: Raw pointer to track is misleading :: posTrack.globalIndex() = "<<posTrack.globalIndex()<<" != "<<posKaOIlist[phiCand]<<" = posKaOIlist["<<phiCand<<"]"; }
       if( negTrack.globalIndex() != negKaOIlist[phiCand] ) { LOG(error)<<"DEBUG :: ERROR ERROR ERROR :: Raw pointer to track is misleading :: negTrack.globalIndex() = "<<negTrack.globalIndex()<<" != "<<negKaOIlist[phiCand]<<" = negKaOIlist["<<phiCand<<"]"; }
 
-      if (cfgMLowPhi < phiMasslist[phiCand] && phiMasslist[phiCand] < cfgMHighPhi) { isPhi = true;}
+      if (cfgDS.cfgMLowPhi < phiMasslist[phiCand] && phiMasslist[phiCand] < cfgDS.cfgMHighPhi) { isPhi = true;}
 
       recoEvent.fill(HIST("Event/Phi/h_Mass_Full"), phiMasslist[phiCand]);
 
-      if(cfgDoSkipDF && (dfCount < cfgNSkipDF)) {continue;}
+      if(cfgDS.cfgDoSkipDF && (dfCount < cfgDS.cfgNSkipDF)) {continue;}
 
       weightDSPt[kPhi1020] = -999.0 , probRatioPt[kPhi1020] = -999.0;
 
       isDownsampledMB[kPhi1020] = false;
-      if (isPhi   ) { isDownsampledMB[kPhi1020] = gRandom->Rndm()<cfgDSMBfactorPhis;}
+      if (isPhi   ) { isDownsampledMB[kPhi1020] = gRandom->Rndm()<cfgDS.cfgDSMBfactorPhis;}
 
       isDownsampledPT[kPhi1020] = false;
-      if (isPhi   ) {isDownsampledPT[kPhi1020] = checkTriggerPt(phiPtlist[phiCand], cfgDSPtfactorPhis, weightDSPt[kPhi1020], probRatioPt[kPhi1020], recoEvent.get<TH1>(HIST("Event/Phi/h_Pt")));}
+      if (isPhi   ) {isDownsampledPT[kPhi1020] = checkTriggerPt(phiPtlist[phiCand], cfgDS.cfgDSPtfactorPhis, weightDSPt[kPhi1020], probRatioPt[kPhi1020], recoEvent.get<TH1>(HIST("Event/Phi/h_Pt")));}
 
       int triggerMaskPhi = (1<<0)*isDownsampledMB[kPhi1020]+(1<<1 )*isDownsampledPT[kPhi1020];
 
-      if(cfgDoDSOfPhi && (triggerMaskPhi == 0)) { 
+      if(cfgDS.cfgDoDSOfPhi && (triggerMaskPhi == 0)) { 
         recoEvent.fill(HIST("Event/Phi/h_Mass_Rejected"), phiMasslist[phiCand]);
         continue;}
       nPhiTriggered++;
@@ -1518,8 +1507,8 @@ struct trackqapidderivedata{
       float massD0 = hfHelper.invMassD0ToPiK(d0);
       float massD0Bar = hfHelper.invMassD0barToKPi(d0);
 
-      if (cfgMLowD0 < massD0 && massD0 < cfgMHighD0) { isD0 = true;}
-      if (cfgMLowD0Bar < massD0Bar && massD0Bar < cfgMHighD0Bar) { isD0Bar = true;}
+      if (cfgDS.cfgMLowD0 < massD0 && massD0 < cfgDS.cfgMHighD0) { isD0 = true;}
+      if (cfgDS.cfgMLowD0Bar < massD0Bar && massD0Bar < cfgDS.cfgMHighD0Bar) { isD0Bar = true;}
       if (isD0   ) { recoEvent.fill(HIST("Event/D0/h_Pt"), d0.pt());}
       if (isD0Bar) { recoEvent.fill(HIST("Event/D0Bar/h_Pt"), d0.pt());}
     }
@@ -1543,31 +1532,31 @@ struct trackqapidderivedata{
       float massD0 = hfHelper.invMassD0ToPiK(d0);
       float massD0Bar = hfHelper.invMassD0barToKPi(d0);
 
-      if (cfgMLowD0 < massD0 && massD0 < cfgMHighD0) { isD0 = true;}
-      if (cfgMLowD0Bar < massD0Bar && massD0Bar < cfgMHighD0Bar) { isD0Bar = true;}
+      if (cfgDS.cfgMLowD0 < massD0 && massD0 < cfgDS.cfgMHighD0) { isD0 = true;}
+      if (cfgDS.cfgMLowD0Bar < massD0Bar && massD0Bar < cfgDS.cfgMHighD0Bar) { isD0Bar = true;}
 
       recoEvent.fill(HIST("Event/D0/h_Mass_Full"), massD0);
       recoEvent.fill(HIST("Event/D0Bar/h_Mass_Full"), massD0Bar);
 
-      if(cfgDoSkipDF && (dfCount < cfgNSkipDF)) {continue;}
+      if(cfgDS.cfgDoSkipDF && (dfCount < cfgDS.cfgNSkipDF)) {continue;}
 
       weightDSPt[kD0] = -999.0 , probRatioPt[kD0] = -999.0;
       weightDSPt[kD0Bar] = -999.0, probRatioPt[kD0Bar] = -999.0;
 
       isDownsampledMB[kD0] = false;
       isDownsampledMB[kD0Bar] = false;
-      if (isD0   ) { isDownsampledMB[kD0] = gRandom->Rndm()<cfgDSMBfactorD0s;}
-      if (isD0Bar) { isDownsampledMB[kD0Bar] = gRandom->Rndm()<cfgDSMBfactorD0s;}
+      if (isD0   ) { isDownsampledMB[kD0] = gRandom->Rndm()<cfgDS.cfgDSMBfactorD0s;}
+      if (isD0Bar) { isDownsampledMB[kD0Bar] = gRandom->Rndm()<cfgDS.cfgDSMBfactorD0s;}
 
       isDownsampledPT[kD0] = false;
       isDownsampledPT[kD0Bar] = false;
-      if (isD0   ) {isDownsampledPT[kD0] = checkTriggerPt(d0.pt(), cfgDSPtfactorD0s, weightDSPt[kD0], probRatioPt[kD0], recoEvent.get<TH1>(HIST("Event/D0/h_Pt")));}
-      if (isD0Bar) {isDownsampledPT[kD0Bar] = checkTriggerPt(d0.pt(), cfgDSPtfactorD0s, weightDSPt[kD0Bar], probRatioPt[kD0Bar], recoEvent.get<TH1>(HIST("Event/D0Bar/h_Pt")));}
+      if (isD0   ) {isDownsampledPT[kD0] = checkTriggerPt(d0.pt(), cfgDS.cfgDSPtfactorD0s, weightDSPt[kD0], probRatioPt[kD0], recoEvent.get<TH1>(HIST("Event/D0/h_Pt")));}
+      if (isD0Bar) {isDownsampledPT[kD0Bar] = checkTriggerPt(d0.pt(), cfgDS.cfgDSPtfactorD0s, weightDSPt[kD0Bar], probRatioPt[kD0Bar], recoEvent.get<TH1>(HIST("Event/D0Bar/h_Pt")));}
 
       int triggerMaskD0 = (1<<0)*isDownsampledMB[kD0]+(1<<1 )*isDownsampledMB[kD0Bar]
                         +(1<<10)*isDownsampledPT[kD0]+(1<<11)*isDownsampledPT[kD0Bar];
 
-      if(cfgDoDSOfD0s && (triggerMaskD0 == 0)) { 
+      if(cfgDS.cfgDoDSOfD0s && (triggerMaskD0 == 0)) { 
         recoEvent.fill(HIST("Event/D0/h_Mass_Rejected"), massD0);
         recoEvent.fill(HIST("Event/D0Bar/h_Mass_Rejected"), massD0Bar);
         continue;
@@ -1824,7 +1813,7 @@ struct trackqapidderivedata{
       float probRatioPt = -999;
       float probRatioQPT = -999;
       
-      if(cfgDoSkipDF && (dfCount < cfgNSkipDF)) {continue;} // what if data frames are empty // In data you did encountered empty df's
+      if(cfgDS.cfgDoSkipDF && (dfCount < cfgDS.cfgNSkipDF)) {continue;} // what if data frames are empty // In data you did encountered empty df's
 
       // //check non zero count in the bins for ratio
       if(startDownsampling == false){
@@ -1839,9 +1828,9 @@ struct trackqapidderivedata{
         recoEvent.fill(HIST("Event/track/Rejected/h_QPt"), track.signed1Pt());
         continue;}
 
-      isDownsampledMB  = gRandom->Rndm()<cfgDSMBfactorTracks;
-      isDownsampledPT  =  checkTriggerPt(track.pt()       , cfgDSPtfactorTracks, weightDSPt , probRatioPt , recoEvent.get<TH1>(HIST("Event/track/Full/h_Pt" )));
-      isDownsampledQPT = checkTriggerQPt(track.signed1Pt(), cfgDSPtfactorTracks, weightDSQPt, probRatioQPT, recoEvent.get<TH1>(HIST("Event/track/Full/h_QPt")));
+      isDownsampledMB  = gRandom->Rndm()<cfgDS.cfgDSMBfactorTracks;
+      isDownsampledPT  =  checkTriggerPt(track.pt()       , cfgDS.cfgDSPtfactorTracks, weightDSPt , probRatioPt , recoEvent.get<TH1>(HIST("Event/track/Full/h_Pt" )));
+      isDownsampledQPT = checkTriggerQPt(track.signed1Pt(), cfgDS.cfgDSPtfactorTracks, weightDSQPt, probRatioQPT, recoEvent.get<TH1>(HIST("Event/track/Full/h_QPt")));
 
       // check If It is a V0 daughter and getItsV0s. 
       if(track.sign() > 0) { isDownsampledV0 = std::binary_search(posV0DauList.begin(), posV0DauList.end(), track.globalIndex());}
@@ -1865,7 +1854,7 @@ struct trackqapidderivedata{
       recoEvent.fill(HIST("Event/track/probRatioPt" ), probRatioPt );
       recoEvent.fill(HIST("Event/track/probRatioQPT"), probRatioQPT);
 
-      if( cfgDoDSOfTrack && (triggerMaskDS == 0)) {
+      if( cfgDS.cfgDoDSOfTrack && (triggerMaskDS == 0)) {
         recoEvent.fill(HIST("Event/track/Rejected/h_Pt" ), track.pt());
         recoEvent.fill(HIST("Event/track/Rejected/h_QPt"), track.signed1Pt());
         trackSkippedBecauseOfMask++;
@@ -2798,7 +2787,7 @@ struct trackqapidderivedata{
           e = RecoDecay::e(posTrack.px(), posTrack.py(), posTrack.pz(), mass1) + RecoDecay::e(negTrack.px(), negTrack.py(), negTrack.pz(), mass2);
           minv = std::sqrt(RecoDecay::m2(p, e));
 
-          if (cfgMLowPhi < minv && minv < cfgMHighPhi) { 
+          if (cfgDS.cfgMLowPhi < minv && minv < cfgDS.cfgMHighPhi) { 
             // Add QA plots too
             recoEvent.fill(HIST("Event/Phi/h_Pt"), pt);
 
@@ -2993,8 +2982,9 @@ struct trackqapidderivedata{
     int lowerTrkIndexPosition ; 
 
     float fSumPtPair;    
-    float fSumQPtPair;   
+    float fSumQPtPair;
     float fSumTglPair;   
+    float fSumDcaCalcPair;   
     float fSumDcaXYPair;   
     float fSumAlphaPair;
 
@@ -3060,26 +3050,53 @@ struct trackqapidderivedata{
 
     //loop over timeframes and associate tracks with that, infact partition them and use them
 
+  // double getDCA(upperTrk.x(), upperTrk.y(), upperTrk.alpha(), upperTrack.snp(), upperTrk.signed1Pt(), 
+  //                 0, 0, B)
+
+    initCCDB(BCs.begin());
+    float uTrkDcaCalc = -999;
+    float lTrkDcaCalc = -999;
+    bool lastUTrkWasAmbg = false;
+    bool lastLTrkWasAmbg = false;
     for(const auto& upperTrk : tracks){
       // if(upperTrk.y() < 0 ) {continue;}
       // if ( !(0 <= upperTrk.alpha() && upperTrk.alpha() < TMath::Pi())) {continue;}
       if(upperTrk.alpha() < 0 ) {continue;}
       if(upperTrk.pt() < cfgCM.csmMuThrPt ) {continue;}
-      if(upperTrk.dcaXY() < cfgCM.csmMuThrDCAMin ) {continue;}
-      if(upperTrk.dcaXY() > cfgCM.csmMuThrDCAMax ) {continue;}
-      if(upperTrk.tpcNClsFound() < 60 ) {continue;}
 
+      uTrkDcaCalc = getDCA(upperTrk.x(), upperTrk.y(), upperTrk.alpha(), upperTrk.snp(), upperTrk.signed1Pt(), 0, 0, B_kG);
+      if(std::abs(uTrkDcaCalc) < cfgCM.csmMuThrDCAMin ) {continue;}
+      if(std::abs(uTrkDcaCalc) > cfgCM.csmMuThrDCAMax ) {continue;}
+
+      // if(std::abs(upperTrk.dcaXY()) < cfgCM.csmMuThrDCAMin ) {continue;}
+      // if(std::abs(upperTrk.dcaXY()) > cfgCM.csmMuThrDCAMax ) {continue;}
+      if(upperTrk.tpcNClsFound() < 100 ) {continue;}
 
       if(upperTrk.collisionId()< 0 ) {
+        lastCollId1 = -999;
         upperTrackTime.clear();
         upperTrackTFidThis.clear();
         upperTrackBcInTF.clear();
         auto bcs = upperTrk.template ambgTrack_as<A>().template bc_as<B>();
-        for (const auto& bc: bcs){
-          GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+        if( bcs.size() == 0 ){
+          // getTimingInfo(BCs.iteratorAt(BCs.size()-1), lastRun, nBCsPerTF, bcSOR, time, tfIdThis, bcInTF);
+          // currentTrackTfIdsList.push_back(tfIdThis);
+          upperTrackTime.push_back(0);
+          upperTrackTFidThis.push_back(-1);
+          upperTrackBcInTF.push_back(-1);          
+        } else if ( bcs.size() == 1 ){
+          GetTimingInfo(bcs.iteratorAt(0), lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+          // currentTrackTfIdsList.push_back(tfIdThis);
           upperTrackTime.push_back(time);
           upperTrackTFidThis.push_back(TFidThis);
           upperTrackBcInTF.push_back(bcInTF);
+        } else {
+          for (const auto& bc: bcs){
+            GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+            upperTrackTime.push_back(time);
+            upperTrackTFidThis.push_back(TFidThis);
+            upperTrackBcInTF.push_back(bcInTF);
+          }
         }
       }
       else {
@@ -3097,31 +3114,18 @@ struct trackqapidderivedata{
         }
       }
 
-      upperTrkTpcTime0           = -999 ; lowerTrkTpcTime0           = -999 ;
-      upperTrkTpcdcaR            = -999 ; lowerTrkTpcdcaR            = -999 ;
-      upperTrkTpcdcaZ            = -999 ; lowerTrkTpcdcaZ            = -999 ;
-      upperTrkTpcClusterByteMask = -999 ; lowerTrkTpcClusterByteMask = -999 ;
-      upperTrkTpcdEdxMax0R       = -999 ; lowerTrkTpcdEdxMax0R       = -999 ;
-      upperTrkTpcdEdxMax1R       = -999 ; lowerTrkTpcdEdxMax1R       = -999 ;
-      upperTrkTpcdEdxMax2R       = -999 ; lowerTrkTpcdEdxMax2R       = -999 ;
-      upperTrkTpcdEdxMax3R       = -999 ; lowerTrkTpcdEdxMax3R       = -999 ;
-      upperTrkTpcdEdxTot0R       = -999 ; lowerTrkTpcdEdxTot0R       = -999 ;
-      upperTrkTpcdEdxTot1R       = -999 ; lowerTrkTpcdEdxTot1R       = -999 ;
-      upperTrkTpcdEdxTot2R       = -999 ; lowerTrkTpcdEdxTot2R       = -999 ;
-      upperTrkTpcdEdxTot3R       = -999 ; lowerTrkTpcdEdxTot3R       = -999 ;
-
-      upperTrkDeltaRefContParamY    = -999; lowerTrkDeltaRefContParamY    = -999;
-      upperTrkDeltaRefContParamZ    = -999; lowerTrkDeltaRefContParamZ    = -999;
-      upperTrkDeltaRefContParamSnp  = -999; lowerTrkDeltaRefContParamSnp  = -999;
-      upperTrkDeltaRefContParamTgl  = -999; lowerTrkDeltaRefContParamTgl  = -999;
-      upperTrkDeltaRefContParamQ2Pt = -999; lowerTrkDeltaRefContParamQ2Pt = -999;
-      upperTrkDeltaRefGloParamY     = -999; lowerTrkDeltaRefGloParamY     = -999;
-      upperTrkDeltaRefGloParamZ     = -999; lowerTrkDeltaRefGloParamZ     = -999;
-      upperTrkDeltaRefGloParamSnp   = -999; lowerTrkDeltaRefGloParamSnp   = -999;
-      upperTrkDeltaRefGloParamTgl   = -999; lowerTrkDeltaRefGloParamTgl   = -999;
-      upperTrkDeltaRefGloParamQ2Pt  = -999; lowerTrkDeltaRefGloParamQ2Pt  = -999;
-      upperTrkDeltaTOFdX            = -999; lowerTrkDeltaTOFdX            = -999;
-      upperTrkDeltaTOFdZ            = -999; lowerTrkDeltaTOFdZ            = -999;
+      upperTrkTpcTime0           = -999 ;  upperTrkDeltaRefContParamY    = -999;
+      upperTrkTpcdcaR            = -999 ;  upperTrkDeltaRefContParamZ    = -999;
+      upperTrkTpcdcaZ            = -999 ;  upperTrkDeltaRefContParamSnp  = -999;
+      upperTrkTpcClusterByteMask = -999 ;  upperTrkDeltaRefContParamTgl  = -999;
+      upperTrkTpcdEdxMax0R       = -999 ;  upperTrkDeltaRefContParamQ2Pt = -999;
+      upperTrkTpcdEdxMax1R       = -999 ;  upperTrkDeltaRefGloParamY     = -999;
+      upperTrkTpcdEdxMax2R       = -999 ;  upperTrkDeltaRefGloParamZ     = -999;
+      upperTrkTpcdEdxMax3R       = -999 ;  upperTrkDeltaRefGloParamSnp   = -999;
+      upperTrkTpcdEdxTot0R       = -999 ;  upperTrkDeltaRefGloParamTgl   = -999;
+      upperTrkTpcdEdxTot1R       = -999 ;  upperTrkDeltaRefGloParamQ2Pt  = -999;
+      upperTrkTpcdEdxTot2R       = -999 ;  upperTrkDeltaTOFdX            = -999;
+      upperTrkTpcdEdxTot3R       = -999 ;  upperTrkDeltaTOFdZ            = -999;
 
       if(upperTrk.trackQAId() != -1){
         auto trackQA_From_Tracks = upperTrk.template trackQA_as<MyTracksQA>();//Dereferencing aod::Tracks ==> aod::TracksQAVersion
@@ -3161,30 +3165,31 @@ struct trackqapidderivedata{
         // if ( !(-TMath::Pi() <= upperTrk.alpha() && upperTrk.alpha() < 0 )) {continue;}
         if (lowerTrk.alpha() > 0 ) {continue;}
         if(lowerTrk.pt() < cfgCM.csmMuThrPt ) {continue;}
-        if(lowerTrk.dcaXY() < cfgCM.csmMuThrDCAMin ) {continue;}
-        if(lowerTrk.dcaXY() > cfgCM.csmMuThrDCAMax ) {continue;}
-        if(lowerTrk.tpcNClsFound() < 60 ) {continue;}
+
+        lTrkDcaCalc = getDCA(lowerTrk.x(), lowerTrk.y(), lowerTrk.alpha(), lowerTrk.snp(), lowerTrk.signed1Pt(), 0, 0, B_kG);
+        if(std::abs(lTrkDcaCalc) < cfgCM.csmMuThrDCAMin ) {continue;}
+        if(std::abs(lTrkDcaCalc) > cfgCM.csmMuThrDCAMax ) {continue;}
+
+        // if(std::abs(lowerTrk.dcaXY()) < cfgCM.csmMuThrDCAMin ) {continue;}
+        // if(std::abs(lowerTrk.dcaXY()) > cfgCM.csmMuThrDCAMax ) {continue;}
+        if(lowerTrk.tpcNClsFound() < 100 ) {continue;}
 
         if( lowerTrk.globalIndex() <= upperTrk.globalIndex()) {continue;} //Strictly upper index policy for fast grouping
         // if((upperTrk.signed1Pt() * lowerTrk.signed1Pt()) < 0) {continue;} //pair track should be of same sign
 
-        fSumPtPair     = std::abs(upperTrk.pt()        + lowerTrk.pt());
-        fSumQPtPair    = std::abs(upperTrk.signed1Pt() + lowerTrk.signed1Pt());
-        fSumTglPair    = std::abs(upperTrk.tgl()       + lowerTrk.tgl());
-        fSumDcaXYPair  = std::abs(upperTrk.dcaXY())    + std::abs(lowerTrk.dcaXY());
-        fSumAlphaPair  = std::abs(upperTrk.alpha()     + lowerTrk.alpha());
+        fSumPtPair      = upperTrk.pt()        + lowerTrk.pt();
+        fSumQPtPair     = upperTrk.signed1Pt() + lowerTrk.signed1Pt();
+        fSumTglPair     = upperTrk.tgl()       + lowerTrk.tgl();
+        fSumDcaXYPair   = upperTrk.dcaXY()     + lowerTrk.dcaXY();
+        fSumDcaCalcPair = uTrkDcaCalc          + lTrkDcaCalc;
+        fSumAlphaPair   = upperTrk.alpha()     + lowerTrk.alpha();
 
-        fDiffPtPair    = std::abs(upperTrk.pt()        - lowerTrk.pt());
-        fDiffQPtPair   = std::abs(upperTrk.signed1Pt() - lowerTrk.signed1Pt());
-        fDiffTglPair   = std::abs(upperTrk.tgl()       - lowerTrk.tgl());
-        fDiffDcaXYPair = std::abs(upperTrk.dcaXY()     - lowerTrk.dcaXY());
-        fDiffAlphaPair = std::abs(std::abs((upperTrk.alpha()-lowerTrk.alpha()))-TMath::Pi());
+        fDiffPtPair    = upperTrk.pt()        - lowerTrk.pt();
+        fDiffQPtPair   = upperTrk.signed1Pt() - lowerTrk.signed1Pt();
+        fDiffTglPair   = upperTrk.tgl()       - lowerTrk.tgl();
+        fDiffDcaXYPair = upperTrk.dcaXY()     - lowerTrk.dcaXY();
+        fDiffAlphaPair = (upperTrk.alpha()-lowerTrk.alpha())-TMath::Pi();
 
-        // if( upperTrk.dcaXY() * lowerTrk.dcaXY() < 0 ){
-        //   fSumDcaXYPair  = std::abs(upperTrk.dcaXY())    + std::abs(lowerTrk.dcaXY());
-        // }else {
-        //   fSumDcaXYPair  = std::abs(upperTrk.dcaXY() + lowerTrk.dcaXY());
-        // }        
         recoEvent.fill(HIST("CosmicMuon/PreSel/sumPtPair"    ), fSumPtPair     );
         recoEvent.fill(HIST("CosmicMuon/PreSel/sumQPtPair"   ), fSumQPtPair    );
         recoEvent.fill(HIST("CosmicMuon/PreSel/sumTglPair"   ), fSumTglPair    );
@@ -3197,12 +3202,18 @@ struct trackqapidderivedata{
         recoEvent.fill(HIST("CosmicMuon/PreSel/diffDcaXYPair"), fDiffDcaXYPair );
         recoEvent.fill(HIST("CosmicMuon/PreSel/diffAlphaPair"), fDiffAlphaPair );
 
-        if ( fSumPtPair < cfgCM.csmMuSumPtPair                                           ) { pairRejectionHist->Fill(kFailSumPtPair    ); continue;}
-        if ( fSumQPtPair > cfgCM.csmMuSumQPtPair                                         ) { pairRejectionHist->Fill(kFailSumQPtPair   ); continue;} //}//
+        if ( std::abs(fSumPtPair) < cfgCM.csmMuSumPtPair                                           ) { pairRejectionHist->Fill(kFailSumPtPair    ); continue;}
+        if ( std::abs(fSumQPtPair) > cfgCM.csmMuSumQPtPair                                         ) { pairRejectionHist->Fill(kFailSumQPtPair   ); continue;} //}//
         // if ( fSumTglPair > cfgCM.csmMuSumTglPair                                         ) { pairRejectionHist->Fill(kFailSumTglPair   ); continue;} //}//
-        if (cfgCM.csmMuCheckSumDcaXY && fSumDcaXYPair > cfgCM.csmMuSumDcaXY              ) { pairRejectionHist->Fill(kFailSumDcaXY     ); continue;} //}//
-        if (cfgCM.csmMuCheckDiffAlphaPair && fDiffAlphaPair > cfgCM.csmMuDiffAlphaPair   ) { pairRejectionHist->Fill(kFailDiffAlphaPair); continue;} //}//
+        // if (cfgCM.csmMuCheckSumDcaXY && std::abs(fSumDcaXYPair) > cfgCM.csmMuSumDcaXY              ) { pairRejectionHist->Fill(kFailSumDcaXY     ); continue;} //}//
+        // if (cfgCM.csmMuCheckSumDcaXY && std::abs(fSumDcaCalcPair) > cfgCM.csmMuSumDcaXY                 ) { pairRejectionHist->Fill(kFailSumDcaXY     ); continue;} //}//
+
+        // if (cfgCM.csmMuCheckDiffAlphaPair && std::abs(fDiffAlphaPair) > cfgCM.csmMuDiffAlphaPair   ) { pairRejectionHist->Fill(kFailDiffAlphaPair); continue;} //}//
         // if (cfgCM.csmMuCheckDiffDcaXY && fDiffDcaXYPair > cfgCM.csmMuDiffDcaXY           ) { pairRejectionHist->Fill(kFailDiffDcaXY    ); continue;} //}//
+
+        if( !(std::abs(std::abs(upperTrk.signed1Pt())-std::abs(lowerTrk.signed1Pt())) < 0.2 )) {continue;}
+        if( !(std::abs(std::abs(upperTrk.tgl())      -std::abs(lowerTrk.tgl())) < 0.2 )      ) {continue;}
+        if( !(std::abs(std::abs(uTrkDcaCalc)         -std::abs(lTrkDcaCalc)) < 5 )           ) {continue;}
 
         recoEvent.fill(HIST("CosmicMuon/PostSel/sumPtPair"    ), fSumPtPair     );
         recoEvent.fill(HIST("CosmicMuon/PostSel/sumQPtPair"   ), fSumQPtPair    );
@@ -3217,25 +3228,40 @@ struct trackqapidderivedata{
         recoEvent.fill(HIST("CosmicMuon/PostSel/diffAlphaPair"), fDiffAlphaPair );
 
         if(lowerTrk.collisionId()< 0 ) {
+          lastCollId2 = -999;
           lowerTrackTime.clear();
           lowerTrackTFidThis.clear();
           lowerTrackBcInTF.clear();
           auto bcs = lowerTrk.template ambgTrack_as<A>().template bc_as<B>();
-          for (const auto& bc: bcs){
-            GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+          if( bcs.size() == 0 ){
+            // getTimingInfo(BCs.iteratorAt(BCs.size()-1), lastRun, nBCsPerTF, bcSOR, time, tfIdThis, bcInTF);
+            // currentTrackTfIdsList.push_back(tfIdThis);
+            lowerTrackTime.push_back(0);
+            lowerTrackTFidThis.push_back(-1);
+            lowerTrackBcInTF.push_back(-1);          
+          } else if ( bcs.size() == 1 ){
+            GetTimingInfo(bcs.iteratorAt(0), lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+            // currentTrackTfIdsList.push_back(tfIdThis);
             lowerTrackTime.push_back(time);
             lowerTrackTFidThis.push_back(TFidThis);
             lowerTrackBcInTF.push_back(bcInTF);
+          } else {
+            for (const auto& bc: bcs){
+              GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
+              lowerTrackTime.push_back(time);
+              lowerTrackTFidThis.push_back(TFidThis);
+              lowerTrackBcInTF.push_back(bcInTF);
+            }
           }
         }
         else {
           lColl = lowerTrk.template collision_as<C>();
-          if (lastCollId1 != uColl.globalIndex()) {
+          if (lastCollId2 != lColl.globalIndex()) {
             lowerTrackTime.clear();
             lowerTrackTFidThis.clear();
             lowerTrackBcInTF.clear();
-            lastCollId1 = uColl.globalIndex();
-            bc = uColl.template bc_as<myBCTable>();
+            lastCollId2 = lColl.globalIndex();
+            bc = lColl.template bc_as<myBCTable>();
             GetTimingInfo(bc, lastRun, nBCsPerTF, bcSOR, time, TFidThis, bcInTF);
             lowerTrackTime.push_back(time);
             lowerTrackTFidThis.push_back(TFidThis);
@@ -3243,31 +3269,30 @@ struct trackqapidderivedata{
           }
         }
 
-        lowerTrkTpcTime0           = -999 ; lowerTrkTpcTime0           = -999 ;
-        lowerTrkTpcdcaR            = -999 ; lowerTrkTpcdcaR            = -999 ;
-        lowerTrkTpcdcaZ            = -999 ; lowerTrkTpcdcaZ            = -999 ;
-        lowerTrkTpcClusterByteMask = -999 ; lowerTrkTpcClusterByteMask = -999 ;
-        lowerTrkTpcdEdxMax0R       = -999 ; lowerTrkTpcdEdxMax0R       = -999 ;
-        lowerTrkTpcdEdxMax1R       = -999 ; lowerTrkTpcdEdxMax1R       = -999 ;
-        lowerTrkTpcdEdxMax2R       = -999 ; lowerTrkTpcdEdxMax2R       = -999 ;
-        lowerTrkTpcdEdxMax3R       = -999 ; lowerTrkTpcdEdxMax3R       = -999 ;
-        lowerTrkTpcdEdxTot0R       = -999 ; lowerTrkTpcdEdxTot0R       = -999 ;
-        lowerTrkTpcdEdxTot1R       = -999 ; lowerTrkTpcdEdxTot1R       = -999 ;
-        lowerTrkTpcdEdxTot2R       = -999 ; lowerTrkTpcdEdxTot2R       = -999 ;
-        lowerTrkTpcdEdxTot3R       = -999 ; lowerTrkTpcdEdxTot3R       = -999 ;
+        // if(lowerTrackTFidThis.size() == 0) {
+        //   LOG(info)<<"DEBUG :: ERROR causing track :: lowerTrk.GI = "<<lowerTrk.globalIndex()
+        //            <<" :: lowerTrk.collisionId() = "<<lowerTrk.collisionId();
+        //   continue;
+        // }
+        // LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: lowerTrackTFidThis.size() == "<<lowerTrackTFidThis.size();
+        // LOG(info)<<"DEBUG :: df_"<<dfCount<<" :: lowerTrackTFidThis[0] == "<<lowerTrackTFidThis[0];
+        // if(dfCount == 2) {
+          // LOG(info)<<"DEBUG :: lowerTrackTFidThis[0] == "/*<<lowerTrackTFidThis[0]*/<<" :: upperTrackTFidThis[0] = "<<upperTrackTFidThis[0];
+        // }
+        if(lowerTrackTFidThis[0] != upperTrackTFidThis[0]) {continue;}
 
-        lowerTrkDeltaRefContParamY    = -999; lowerTrkDeltaRefContParamY    = -999;
-        lowerTrkDeltaRefContParamZ    = -999; lowerTrkDeltaRefContParamZ    = -999;
-        lowerTrkDeltaRefContParamSnp  = -999; lowerTrkDeltaRefContParamSnp  = -999;
-        lowerTrkDeltaRefContParamTgl  = -999; lowerTrkDeltaRefContParamTgl  = -999;
-        lowerTrkDeltaRefContParamQ2Pt = -999; lowerTrkDeltaRefContParamQ2Pt = -999;
-        lowerTrkDeltaRefGloParamY     = -999; lowerTrkDeltaRefGloParamY     = -999;
-        lowerTrkDeltaRefGloParamZ     = -999; lowerTrkDeltaRefGloParamZ     = -999;
-        lowerTrkDeltaRefGloParamSnp   = -999; lowerTrkDeltaRefGloParamSnp   = -999;
-        lowerTrkDeltaRefGloParamTgl   = -999; lowerTrkDeltaRefGloParamTgl   = -999;
-        lowerTrkDeltaRefGloParamQ2Pt  = -999; lowerTrkDeltaRefGloParamQ2Pt  = -999;
-        lowerTrkDeltaTOFdX            = -999; lowerTrkDeltaTOFdX            = -999;
-        lowerTrkDeltaTOFdZ            = -999; lowerTrkDeltaTOFdZ            = -999;
+        lowerTrkTpcTime0           = -999 ; lowerTrkDeltaRefContParamY    = -999;
+        lowerTrkTpcdcaR            = -999 ; lowerTrkDeltaRefContParamZ    = -999;
+        lowerTrkTpcdcaZ            = -999 ; lowerTrkDeltaRefContParamSnp  = -999;
+        lowerTrkTpcClusterByteMask = -999 ; lowerTrkDeltaRefContParamTgl  = -999;
+        lowerTrkTpcdEdxMax0R       = -999 ; lowerTrkDeltaRefContParamQ2Pt = -999;
+        lowerTrkTpcdEdxMax1R       = -999 ; lowerTrkDeltaRefGloParamY     = -999;
+        lowerTrkTpcdEdxMax2R       = -999 ; lowerTrkDeltaRefGloParamZ     = -999;
+        lowerTrkTpcdEdxMax3R       = -999 ; lowerTrkDeltaRefGloParamSnp   = -999;
+        lowerTrkTpcdEdxTot0R       = -999 ; lowerTrkDeltaRefGloParamTgl   = -999;
+        lowerTrkTpcdEdxTot1R       = -999 ; lowerTrkDeltaRefGloParamQ2Pt  = -999;
+        lowerTrkTpcdEdxTot2R       = -999 ; lowerTrkDeltaTOFdX            = -999;
+        lowerTrkTpcdEdxTot3R       = -999 ; lowerTrkDeltaTOFdZ            = -999;
 
         if(lowerTrk.trackQAId() != -1){
           auto trackQA_From_Tracks = lowerTrk.template trackQA_as<MyTracksQA>();//Dereferencing aod::Tracks ==> aod::TracksQAVersion
@@ -3455,7 +3480,8 @@ struct trackqapidderivedata{
           // ,codeSqrtScaling(upperTrk.tofNSigmaDe(), cfgPIDSigma0, cfgPIDSigma1, cfgPIDClampMin, cfgPIDClampMax)
           
           ,upperTrk.tofSignal()
-
+          
+          ,uTrkDcaCalc
           ,upperTrk.dcaXY()   //	dcaXY	float	Impact parameter in XY of the track to the primary vertex
           ,upperTrk.dcaZ()	   //	dcaZ	float	Impact parameter in Z of the track to the primary vertex
           ,upperTrk.sigmaDcaXY2()  //		sigmaDcaXY2	float	Impact parameter sigma^2 in XY of the track to the primary vertex
@@ -3606,6 +3632,7 @@ struct trackqapidderivedata{
           
           ,lowerTrk.tofSignal()
 
+          ,lTrkDcaCalc
           ,lowerTrk.dcaXY()   //	dcaXY	float	Impact parameter in XY of the track to the primary vertex
           ,lowerTrk.dcaZ()	   //	dcaZ	float	Impact parameter in Z of the track to the primary vertex
           ,lowerTrk.sigmaDcaXY2()  //		sigmaDcaXY2	float	Impact parameter sigma^2 in XY of the track to the primary vertex
@@ -3627,7 +3654,8 @@ struct trackqapidderivedata{
           //Sum and difference variables
           ,fSumPtPair     
           ,fSumQPtPair    
-          ,fSumTglPair    
+          ,fSumTglPair
+          ,fSumDcaCalcPair    
           ,fSumDcaXYPair
           ,fSumAlphaPair
           
@@ -3637,13 +3665,14 @@ struct trackqapidderivedata{
           ,fDiffDcaXYPair 
           ,fDiffAlphaPair
 
-          ,upperTrackTime
-          ,upperTrackTFidThis
-          ,upperTrackBcInTF
+          ,upperTrackTime[0]
+          ,upperTrackTFidThis[0]
+          ,upperTrackBcInTF[0]
 
-          ,lowerTrackTime
-          ,lowerTrackTFidThis
-          ,lowerTrackBcInTF
+          ,lowerTrackTime[0]
+          ,lowerTrackTFidThis[0]
+          ,lowerTrackBcInTF[0]
+          ,B_kG
         );
         cosmicPairCounter++;
       }//lower track loop ends
